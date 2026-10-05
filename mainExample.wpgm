@@ -1,12 +1,12 @@
 import wollok.game.*
 
-import example.pepita
+import example.link
 
-program PepitaGame {
-	game.title("Pepita")
+program LinkGame {
+	game.title("Link")
 	game.height(10)
 	game.width(10)
-
+	
 	// add assets in asset folder, for example, for the background
   // game.boardGround("fondo2.jpg")
 
