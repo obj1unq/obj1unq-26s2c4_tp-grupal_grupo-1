@@ -4,7 +4,7 @@ _(Git Grupal: https://docs.google.com/presentation/d/1-o5zEUfuUT72ea8q2rk8mwHSqM
 ## Equipo de desarrollo
 
 - Leonardo Perez
-- Facundo Soto
+- Facundo Gonzalo Vega
 
 ## Capturas
 
@@ -14,7 +14,6 @@ _(Git Grupal: https://docs.google.com/presentation/d/1-o5zEUfuUT72ea8q2rk8mwHSqM
   <img src="assets/captura-gameover.png" width="250" height="250" style="object-fit: cover">
 </p>
 
-_(reemplazar por capturas del juego propio)_
 
 ## Gameplay
 
