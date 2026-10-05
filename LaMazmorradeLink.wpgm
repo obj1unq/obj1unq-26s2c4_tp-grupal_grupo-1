@@ -1,0 +1,8 @@
+import wollok.game.*
+program PepitaGame {
+	game.title("La Mazmorra de Link")
+	game.height(15)
+	game.width(20)
+	game.boardGround("fondo.png")
+	game.start()
+}
