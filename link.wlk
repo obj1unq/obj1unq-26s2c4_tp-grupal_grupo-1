@@ -14,6 +14,10 @@ object link {
         return position
     }
 
+    method positionTest(_position){
+        position = _position
+    }
+
     method mover(direccion) {
         direccionActual = direccion 
 

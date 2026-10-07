@@ -1,9 +1,40 @@
 import link.*
+import direcciones.*
 
-describe "group of tests for pepita" {
+describe "group of tests for link" {
+  	method initialize() {
+		// El game no se reinicia en cada test: https://github.com/uqbar-project/wollok/issues/1896
+		game.clear()
+		game.height(15) //configurar el tamaño es importante 
+		game.width(20)
 
-  test "aaa" {
-    
-  }
+	}
+
+
+  	test "link mover arriba" {
+
+		link.mover(arriba)
+		assert.equals(game.at(0,2), link.position())
+	}
+
+	  	test "link mover abajo" {
+
+		link.mover(abajo)
+		assert.equals(game.at(0,0), link.position())
+	}
+
+	  	test "link mover derecha" {
+
+		link.mover(derecha)
+		assert.equals(game.at(1,1), link.position())
+	}
+
+	  	test "link mover izquierda" {
+
+		link.positionTest(game.at(0,1))	
+		link.mover(arriba)
+		assert.equals(game.at(0,2), link.position())
+	}
+
 
 }
