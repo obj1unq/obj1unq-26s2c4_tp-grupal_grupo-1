@@ -27,6 +27,9 @@ object link {
         }
     }
 
+		method position(_position) { //el setter solo lo necesito para testear
+		position = _position 
+	}
 
 }
 
