@@ -1,9 +1,89 @@
 import link.*
+import direcciones.*
 
-describe "group of tests for pepita" {
 
-  test "aaa" {
-    
+describe "group of tests for link" {
+  	method initialize() {
+		// El game no se reinicia en cada test: https://github.com/uqbar-project/wollok/issues/1896
+		game.clear()
+		game.height(15) //configurar el tamaño es importante 
+		game.width(20)
+
+	}
+
+
+  	test "link mover arriba" {
+
+		link.mover(arriba)
+		assert.equals(game.at(0,2), link.position())
+	}
+
+	  	test "link mover abajo" {
+
+		link.mover(abajo)
+		assert.equals(game.at(0,0), link.position())
+	}
+
+	  	test "link mover derecha" {
+
+		link.mover(derecha)
+		assert.equals(game.at(1,1), link.position())
+	}
+
+	  	test "link mover izquierda" {
+
+		link.positionTest(game.at(0,1))	
+		link.mover(arriba)
+		assert.equals(game.at(0,2), link.position())
+	}
+}
+
+describe "link cambia de imagen al moverse" {
+	method initialize() {
+
+		link.position(game.at(1,1))
+	}
+
+  	test "link mover arriba" {
+
+		link.mover(arriba)
+		assert.equals(link.image(), "link-normal-arriba.png")
+	}
+
+  	test "link mover abajo" {
+    link.mover(abajo)
+    assert.equals(link.image(), "link-normal-abajo.png")
   }
 
+  	test "link mover derecha" {
+
+    link.mover(derecha)
+    assert.equals(link.image(), "link-normal-derecha.png")
+  }
+
+  	test "link mover izquierda" {
+
+    link.mover(izquierda)
+    assert.equals(link.image(), "link-normal-izquierda.png")
+  }
 }
+
+describe "link cambia de imagen pero no se mueve" {
+  method initialize() {
+    link.position(game.at(0,0))
+  }
+
+  	test "link mover abajo" {
+    assert.throwsException({link.mover(abajo)})
+    assert.equals(link.image(), "link-normal-abajo.png")
+    assert.equals(link.position(), game.at(0,0))
+  }
+
+  	test "link mover izquierda" {
+
+    assert.throwsException({link.mover(izquierda)})
+    assert.equals(link.image(), "link-normal-izquierda.png")
+    assert.equals(link.position(), game.at(0,0))
+  }
+}
+

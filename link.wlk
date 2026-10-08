@@ -14,6 +14,10 @@ object link {
         return position
     }
 
+    method positionTest(_position){
+        position = _position
+    }
+
     method mover(direccion) {
         direccionActual = direccion 
 
@@ -23,6 +27,9 @@ object link {
         }
     }
 
+		method position(_position) { //el setter solo lo necesito para testear
+		position = _position 
+	}
 
 }
 
