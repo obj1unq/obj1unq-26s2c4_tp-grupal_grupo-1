@@ -8,6 +8,8 @@ program LinkGame {
     game.width(20)
     game.boardGround("fondo.png")
 
+    const vasija = new Vasija(position = game.at(4, 3))
+    game.addVisual(vasija)
     game.addVisual(link)
 
     nivel.configurarTeclas()

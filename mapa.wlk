@@ -10,6 +10,7 @@ object nivel{
 	    keyboard.right().onPressDo({ jugador.mover(derecha)})
 	    keyboard.up().onPressDo({ jugador.mover(arriba)})
 	    keyboard.down().onPressDo({ jugador.mover(abajo)})
+        keyboard.z().onPressDo({ link.usarArma() })
     }
     
 }
