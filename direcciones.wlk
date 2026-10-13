@@ -26,6 +26,8 @@ object tablero {
 
 object arriba {
     method texto() = "arriba"
+
+    method posicionAlLado(position) = position.up(1)
     
     method siguiente(position) {
         const nueva = position.up(1) 
@@ -37,6 +39,8 @@ object arriba {
 object abajo {
     method texto() = "abajo"
 
+    method posicionAlLado(position) = position.down(1)
+
     method siguiente(position) {
         const nueva = position.down(1) 
         tablero.validar(nueva)
@@ -47,6 +51,8 @@ object abajo {
 object derecha {
     method texto() = "derecha"
     
+    method posicionAlLado(position) = position.right(1)
+
     method siguiente(position) {
         const nueva = position.right(1) 
         tablero.validar(nueva)
@@ -57,6 +63,8 @@ object derecha {
 
 object izquierda{
     method texto() = "izquierda"
+    
+    method posicionAlLado(position) = position.left(1)
     
     method siguiente(position) {
         const nueva = position.left(1) 
