@@ -1,0 +1,23 @@
+import wollok.game.*
+import direcciones.*
+import link.*
+import mapa.*
+import objetos.*
+program LinkGame {
+    game.title("La Mazmorra de Link")
+    game.height(15)
+    game.width(20)
+    game.boardGround("fondo.png")
+
+    const vasija = new Vasija(position = game.at(4, 3))
+    game.addVisual(vasija)
+    game.addVisual(link)
+
+    const llave = new Llave(position = game.at(5, 1))
+    game.addVisual(llave)
+    game.onCollideDo(llave, { personaje => llave.serAgarradaPor(personaje) })
+    nivel.configurarTeclas()
+
+    game.start()
+}
+

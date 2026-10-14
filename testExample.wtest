@@ -1,9 +1,158 @@
-import example.pepita
+import link.*
+import direcciones.*
 
-describe "group of tests for pepita" {
 
-  test "pepita has initial energy" {
-    assert.equals(100, pepita.energy())
+describe "group of tests for link" {
+  	method initialize() {
+		// El game no se reinicia en cada test: https://github.com/uqbar-project/wollok/issues/1896
+		game.clear()
+		game.height(15) //configurar el tamaño es importante 
+		game.width(20)
+
+	}
+
+
+  	test "link mover arriba" {
+
+		link.mover(arriba)
+		assert.equals(game.at(0,2), link.position())
+	}
+
+	  	test "link mover abajo" {
+
+		link.mover(abajo)
+		assert.equals(game.at(0,0), link.position())
+	}
+
+	  	test "link mover derecha" {
+
+		link.mover(derecha)
+		assert.equals(game.at(1,1), link.position())
+	}
+
+	  	test "link mover izquierda" {
+
+		link.position(game.at(0,1))	
+		link.mover(arriba)
+		assert.equals(game.at(0,2), link.position())
+	}
+}
+
+describe "link cambia de imagen al moverse" {
+	method initialize() {
+
+		link.position(game.at(1,1))
+	}
+
+  	test "link mover arriba" {
+
+		link.mover(arriba)
+		assert.equals(link.image(), "link-normal-arriba.png")
+	}
+
+  	test "link mover abajo" {
+    link.mover(abajo)
+    assert.equals(link.image(), "link-normal-abajo.png")
   }
 
+  	test "link mover derecha" {
+
+    link.mover(derecha)
+    assert.equals(link.image(), "link-normal-derecha.png")
+  }
+
+  	test "link mover izquierda" {
+
+    link.mover(izquierda)
+    assert.equals(link.image(), "link-normal-izquierda.png")
+  }
+}
+
+describe "link cambia de imagen pero no se mueve" {
+  method initialize() {
+    link.position(game.at(0,0))
+  }
+
+  	test "link mover abajo" {
+    assert.throwsException({link.mover(abajo)})
+    assert.equals(link.image(), "link-normal-abajo.png")
+    assert.equals(link.position(), game.at(0,0))
+  }
+
+  	test "link mover izquierda" {
+
+    assert.throwsException({link.mover(izquierda)})
+    assert.equals(link.image(), "link-normal-izquierda.png")
+    assert.equals(link.position(), game.at(0,0))
+  }
+}
+
+describe "tests de la logica de ataque y arma" {
+
+
+    test "link cambia su estado a ataque al usar la espada" {
+        link.estado(normal)
+        link.armaEquipada(espada)
+
+        link.usarArma()
+
+        assert.equals(ataque, link.estado())
+    }
+
+    test "la posicion objetivo del ataque se calcula bien segun hacia donde mira Link" {
+
+        link.position(game.at(5, 5))
+        
+
+        link.direccionActual(arriba)
+        assert.equals(game.at(5, 6), link.direccionActual().posicionAlLado(link.position()))
+
+
+        link.direccionActual(derecha)
+        assert.equals(game.at(6, 5), link.direccionActual().posicionAlLado(link.position()))
+
+		link.direccionActual(abajo)
+		assert.equals(game.at(5, 4), link.direccionActual().posicionAlLado(link.position()))
+
+		link.direccionActual(izquierda)
+		assert.equals(game.at(4, 5), link.direccionActual().posicionAlLado(link.position()))
+    }
+    
+    
+    test "link no puede moverse ni atacar si ya esta en estado de ataque" {
+        const posicion = game.at(5,5)
+		link.position(posicion)
+
+        link.estado(ataque)
+        link.mover(derecha)
+        
+        assert.equals(posicion, link.position())
+    }
+}
+
+
+describe "tests de interactividad de la vasija" {
+	const vasija = new Vasija(position = game.at(4, 3))
+	
+    test "una vasija recien creada esta sana y bloquea el paso" {
+        assert.equals("vasija-sana.png", vasija.image())
+        
+
+        assert.notThat(vasija.esAtravesable())
+    }
+
+    test "al recibir daño la vasija se rompe y permite el paso" {
+        vasija.recibirAtaque(1)
+        
+        assert.that(vasija.esAtravesable())
+    }
+
+    test "pegarle a una vasija que ya esta rota no genera errores ni cambia su estado" {
+        vasija.recibirAtaque(1)
+        vasija.recibirAtaque(1)
+        
+
+        assert.equals("vasija-rota.png", vasija.image())
+        assert.that(vasija.esAtravesable())
+    }
 }
