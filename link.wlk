@@ -6,6 +6,7 @@ object link {
     var property estado = normal
     var property direccionActual = abajo
     var property armaEquipada = espada
+    var property tieneLlave = false
     method image(){
         return "link-" + estado.forma() + "-" + direccionActual.texto() + ".png"
     }
@@ -33,6 +34,10 @@ object link {
 		method position(_position) {
 		position = _position 
 	}
+
+    method agarrarLlave() {
+    tieneLlave = true
+  }
 
 }
 
