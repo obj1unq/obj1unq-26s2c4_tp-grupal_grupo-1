@@ -11,6 +11,7 @@ program LinkGame {
 
     nivel.armar(sala1)
     game.addVisual(link)
+    game.addVisual(hud)
     nivel.configurarTeclas()
 
     game.start()

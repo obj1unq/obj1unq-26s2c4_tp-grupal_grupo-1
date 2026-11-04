@@ -2,6 +2,8 @@
 import direcciones.*
 import link.*
 import objetos.*
+import enemigos.*
+import partida.*
 
 // Símbolos para armar las salas
 object p {  // pared
@@ -46,22 +48,53 @@ object s {  // puerta de salida
     }
 }
 
+object m {  // murciélago
+    method construirEn(posicion) {
+        game.addVisual(new Murcielago(position = posicion))
+    }
+}
+
+object g {  // soldado (guardia)
+    method construirEn(posicion) {
+        game.addVisual(new Soldado(position = posicion))
+    }
+}
+
 const sala1 = [
     [p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p],
     [p, l, o, p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
-    [p, o, o, p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, s],
+    [p, o, o, p, o, o, o, o, o, o, o, o, m, o, o, o, o, o, o, s],
     [p, p, v, p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, o, p, p, o, o, o, o, p, p, o, o, o, o, o, p],
     [p, o, o, o, o, o, p, p, o, o, o, o, p, p, o, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
-    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, g, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
     [p, o, j, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
     [p, p, e, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p]
 ]
+
+object hud {
+    const jugador = link
+    const registro = marcador
+
+    method position() = game.at(10, 14)
+
+    method text() = "Corazones: " + jugador.corazones().toString() + "   Llave: " + self.textoLlave() + "   Puntaje: " + registro.puntaje().toString()
+
+    method textoLlave() = if (jugador.tieneLlave()) "sí" else "no"
+
+    method textColor() = "FFFFFFFF"
+
+    method esAtravesable() = false
+
+    method recibirAtaque(danio) {}
+
+    method interactuarCon(personaje) {}
+}
 
 object nivel{
     const jugador = link

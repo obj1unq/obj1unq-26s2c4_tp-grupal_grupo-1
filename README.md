@@ -8,11 +8,7 @@ _(Git Grupal: https://docs.google.com/presentation/d/1-o5zEUfuUT72ea8q2rk8mwHSqM
 
 ## Capturas
 
-<p>
-  <img src="assets/captura-sala1.png" width="250" height="250" style="object-fit: cover">
-  <img src="assets/captura-jefe.png" width="250" height="250" style="object-fit: cover">
-  <img src="assets/captura-gameover.png" width="250" height="250" style="object-fit: cover">
-</p>
+AGREGAR CAPTURAS CUANDO ESTO FUCNIONE DE VERDAD
 
 
 ## Gameplay
@@ -24,13 +20,14 @@ _(video corto del juego nuestro cuando esté andando)_
 **Objetivo:** recorrer una mazmorra de 4 salas vista desde arriba, juntar los ítems que abren el camino, vencer a los enemigos y derrotar al jefe de la última sala. Perdés si te quedás sin corazones.
 
 **Mazmorra**
-- Cada sala es una grilla de 10×8 con paredes, una puerta de entrada y una de salida.
+- Cada sala es una grilla de 20×14 con paredes, una puerta de entrada y una de salida. Arriba hay una fila con los corazones, la llave y el puntaje.
 - Las puertas de salida están cerradas: algunas se abren con llave, otras con bomba, la del jefe se abre al vencer a todos los enemigos de la sala.
 - Los enemigos se mueven solos; si tocan a Link le sacan un corazón.
+- Las vasijas bloquean el paso y se rompen con un golpe de espada.
 
 **Controles**
 - `←` `→` `↑` `↓`: mover a Link.
-- `Espacio`: atacar con la espada a la celda de adelante.
+- `Z`: atacar con la espada a la celda de adelante.
 - `B`: usar el ítem seleccionado (bomba, poción).
 - `1` / `2`: elegir ítem.
 
@@ -48,7 +45,8 @@ _(video corto del juego nuestro cuando esté andando)_
 
 **Vida y puntos**
 - Link tiene 3 corazones (máximo 5).
-- Cada enemigo vencido suma puntos según el tipo; cada sala completada suma 200.
+- Después de recibir un golpe, Link es invencible durante 1 segundo.
+- Cada enemigo vencido suma puntos según el tipo (murciélago 50, soldado 100, jefe 500); cada sala completada suma 200.
 
 **Fin del juego**
 - Sin corazones: GAME OVER. Al derrotar al jefe: pantalla de victoria con el puntaje.

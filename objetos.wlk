@@ -1,4 +1,5 @@
 import link.*
+import partida.*
 
 class Llave{
     var property position
@@ -32,6 +33,7 @@ class Pared {
 class PuertaConCandado {
     var property position
     var estado = cerrada
+    const juego = partida
 
     method image() = "puerta-" + estado.forma() + ".png"
 
@@ -49,6 +51,7 @@ class PuertaConCandado {
         self.validarLlave(personaje)
         personaje.usarLlave()
         estado = abierta
+        juego.completarSala()
     }
 
     method validarLlave(personaje) {
