@@ -22,6 +22,10 @@ object tablero {
             self.error(position.toString() + " no es atravesable")
         }
     }
+
+    method estaLibre(position) {
+        return self.dentro(position) and game.getObjectsIn(position).isEmpty()
+    }
 }
 
 object arriba {

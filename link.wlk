@@ -1,5 +1,6 @@
 
 import direcciones.*
+import partida.*
 
 object link {
     var position = game.at(0,1) 
@@ -7,6 +8,9 @@ object link {
     var property direccionActual = abajo
     var property armaEquipada = espada
     var property tieneLlave = false
+    var corazones = 3
+    var invulnerable = false
+    const juego = partida
     method image(){
         return "link-" + estado.forma() + "-" + direccionActual.texto() + ".png"
     }
@@ -50,7 +54,28 @@ object link {
 
     method esAtravesable() = false
 
-    method recibirAtaque(danio) {}
+    method recibirAtaque(danio) {
+        if (not invulnerable) {
+            self.perderCorazones(danio)
+        }
+    }
+
+    method perderCorazones(danio) {
+        corazones = (corazones - danio).max(0)
+        invulnerable = true
+        game.schedule(1000, { self.volverAVulnerable() })
+        if (self.sinCorazones()) {
+            juego.perder()
+        }
+    }
+
+    method volverAVulnerable() {
+        invulnerable = false
+    }
+
+    method corazones() = corazones
+
+    method sinCorazones() = corazones == 0
 
     method interactuarCon(personaje) {}
 
