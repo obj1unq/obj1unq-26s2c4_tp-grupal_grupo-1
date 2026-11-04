@@ -1,0 +1,18 @@
+import wollok.game.*
+import direcciones.*
+import link.*
+import mapa.*
+import objetos.*
+program LinkGame {
+    game.title("La Mazmorra de Link")
+    game.height(15)
+    game.width(20)
+    game.boardGround("fondo.png")
+
+    nivel.armar(sala1)
+    game.addVisual(link)
+    game.addVisual(hud)
+    nivel.configurarTeclas()
+
+    game.start()
+}
