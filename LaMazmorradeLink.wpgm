@@ -15,9 +15,10 @@ program LinkGame {
 
     const llave = new Llave(position = game.at(5, 1))
     game.addVisual(llave)
-    game.onCollideDo(llave, { personaje => llave.serAgarradaPor(personaje) })
+
+    const puerta = new PuertaConCandado(position = game.at(8, 3))
+    game.addVisual(puerta)
     nivel.configurarTeclas()
 
     game.start()
 }
-

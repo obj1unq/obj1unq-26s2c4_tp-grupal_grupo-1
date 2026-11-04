@@ -20,9 +20,14 @@ object link {
         direccionActual = direccion 
 
         if(estado.puedeMover()){        
+            self.interactuarConObjetosEn(direccion.posicionAlLado(position))
             const nuevaPosition = direccion.siguiente(position) 
             position = nuevaPosition 
         }
+    }
+
+    method interactuarConObjetosEn(destino) {
+        game.getObjectsIn(destino).forEach({ objeto => objeto.interactuarCon(self) })
     }
 
     method usarArma() {
@@ -38,6 +43,16 @@ object link {
     method agarrarLlave() {
     tieneLlave = true
   }
+
+    method usarLlave() {
+        tieneLlave = false
+    }
+
+    method esAtravesable() = false
+
+    method recibirAtaque(danio) {}
+
+    method interactuarCon(personaje) {}
 
 }
 
@@ -82,6 +97,12 @@ class GolpeDeEspada {
         
         game.schedule(150, { game.removeVisual(self) })
     }
+
+    method esAtravesable() = true
+
+    method recibirAtaque(danio) {}
+
+    method interactuarCon(personaje) {}
 }
 
 class Vasija {
@@ -95,8 +116,9 @@ class Vasija {
     }
 
     method esAtravesable() = estado.puedeMover()
+
+    method interactuarCon(personaje) {}
 }
 
 const rota = new Estado(forma = "rota", puedeMover = true)
 const sana = new Estado(forma = "sana", puedeMover = false)
-
