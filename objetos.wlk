@@ -18,6 +18,17 @@ class Llave{
   
 }
 
+class Pared {
+    const property position
+    const property image = "pared.png"
+
+    method esAtravesable() = false
+
+    method recibirAtaque(danio) {}
+
+    method interactuarCon(personaje) {}
+}
+
 class PuertaConCandado {
     var property position
     var estado = cerrada

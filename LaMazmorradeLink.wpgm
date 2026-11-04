@@ -9,15 +9,8 @@ program LinkGame {
     game.width(20)
     game.boardGround("fondo.png")
 
-    const vasija = new Vasija(position = game.at(4, 3))
-    game.addVisual(vasija)
+    nivel.armar(sala1)
     game.addVisual(link)
-
-    const llave = new Llave(position = game.at(5, 1))
-    game.addVisual(llave)
-
-    const puerta = new PuertaConCandado(position = game.at(8, 3))
-    game.addVisual(puerta)
     nivel.configurarTeclas()
 
     game.start()
