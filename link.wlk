@@ -1,38 +1,20 @@
-
 import direcciones.*
 import partida.*
 
-object link {
-    var position = game.at(0,1) 
+class Personaje {
+    var property position = game.at(0, 0)
     var property estado = normal
     var property direccionActual = abajo
     var property armaEquipada = espada
-    var property tieneLlave = false
-    var corazones = 3
-    var invulnerable = false
-    const juego = partida
-    method image(){
-        return "link-" + estado.forma() + "-" + direccionActual.texto() + ".png"
+
+    // Template Method pedido en la corrección
+    method image() {
+        return self.nombreImagen() + "-" + estado.forma() + "-" + direccionActual.texto() + ".png"
     }
 
-    method position() { 
-        return position
-    }
+    method nombreImagen()
 
-
-    method mover(direccion) {
-        direccionActual = direccion 
-
-        if(estado.puedeMover()){        
-            self.interactuarConObjetosEn(direccion.posicionAlLado(position))
-            const nuevaPosition = direccion.siguiente(position) 
-            position = nuevaPosition 
-        }
-    }
-
-    method interactuarConObjetosEn(destino) {
-        game.getObjectsIn(destino).forEach({ objeto => objeto.interactuarCon(self) })
-    }
+    method esAtravesable() = false
 
     method usarArma() {
         if (estado.puedeMover()) {
@@ -40,19 +22,45 @@ object link {
         }
     }
 
-		method position(_position) {
-		position = _position 
-	}
+    method interactuarCon(personaje) {}
+}
+
+object link inherits Personaje(position = game.at(0, 1)) {
+    var tieneLlave = false
+    var corazones = 3
+    var invulnerable = false
+    const juego = partida
+
+    override method nombreImagen() = "link"
+
+    method tieneLlave() = tieneLlave
+    method corazones() = corazones
+    method invulnerable() = invulnerable
+
+    method mover(direccion) {
+        direccionActual = direccion
+        if (estado.puedeMover()) {
+            self.interactuarConObjetosEn(direccion.posicionAlLado(position))
+            const nuevaPosition = direccion.siguiente(position)
+            position = nuevaPosition
+        }
+    }
+
+    method interactuarConObjetosEn(destino) {
+        game.getObjectsIn(destino).forEach({ objeto => objeto.interactuarCon(self) })
+    }
 
     method agarrarLlave() {
-    tieneLlave = true
-  }
+        tieneLlave = true
+    }
 
     method usarLlave() {
         tieneLlave = false
     }
 
-    method esAtravesable() = false
+    method curar(cantidad) {
+        corazones = (corazones + cantidad).min(5)
+    }
 
     method recibirAtaque(danio) {
         if (not invulnerable) {
@@ -73,12 +81,15 @@ object link {
         invulnerable = false
     }
 
-    method corazones() = corazones
-
     method sinCorazones() = corazones == 0
 
-    method interactuarCon(personaje) {}
-
+    method reiniciar() {
+        estado = normal
+        direccionActual = abajo
+        tieneLlave = false
+        corazones = 3
+        invulnerable = false
+    }
 }
 
 class Estado {
@@ -89,61 +100,46 @@ class Estado {
 const normal = new Estado(forma = "normal", puedeMover = true)
 const ataque = new Estado(forma = "ataque", puedeMover = false)
 
-
 object espada {
-
     const property danio = 1
 
     method usar(personaje) {
         personaje.estado(ataque)
         const posObjetivo = personaje.direccionActual().posicionAlLado(personaje.position())
-        
-        game.addVisual(new GolpeDeEspada(
-            position = posObjetivo, 
+
+        const golpe = new GolpeDeEspada(
+            position = posObjetivo,
             direccion = personaje.direccionActual(),
             danioGolpe = self.danio()
-        ))
-        
+        )
+        game.addVisual(golpe)
+        golpe.activar()
+
         game.schedule(500, { personaje.estado(normal) })
     }
 }
 
 class GolpeDeEspada {
     var property position
-    const direccion 
+    const direccion
     const danioGolpe
-    
+
     method image() = "estocada-" + direccion.texto() + ".png"
-    
-    method initialize() {
-        game.onCollideDo(self, { objeto => 
-            objeto.recibirAtaque(danioGolpe) 
+
+    method activar() {
+        game.getObjectsIn(position).forEach({ objeto =>
+            if (objeto != self) {
+                objeto.recibirAtaque(danioGolpe)
+            }
         })
-        
-        game.schedule(150, { game.removeVisual(self) })
+        game.schedule(150, {
+            if (game.hasVisual(self)) {
+                game.removeVisual(self)
+            }
+        })
     }
 
     method esAtravesable() = true
-
     method recibirAtaque(danio) {}
-
     method interactuarCon(personaje) {}
 }
-
-class Vasija {
-    var property position
-    var property estado = sana
-
-    method image() = "vasija-" + estado.forma() + ".png"
-
-    method recibirAtaque(danio) {
-        estado = rota
-    }
-
-    method esAtravesable() = estado.puedeMover()
-
-    method interactuarCon(personaje) {}
-}
-
-const rota = new Estado(forma = "rota", puedeMover = true)
-const sana = new Estado(forma = "sana", puedeMover = false)

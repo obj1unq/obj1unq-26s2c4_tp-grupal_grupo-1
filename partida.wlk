@@ -1,3 +1,5 @@
+import mapa.*
+
 object marcador {
     const enemigosVencidos = []
     var salasCompletadas = 0
@@ -15,11 +17,22 @@ object marcador {
 
 object partida {
     const registro = marcador
+    const salas = [sala1, sala2, sala3]
+    var indiceSalaActual = 0
+
+    method iniciar() {
+        indiceSalaActual = 0
+        nivel.cargarSala(salas.get(indiceSalaActual))
+    }
 
     method completarSala() {
         registro.completarSala()
-        // por ahora la mazmorra tiene una sola sala
-        self.ganar()
+        indiceSalaActual += 1
+        if (indiceSalaActual < salas.size()) {
+            nivel.cargarSala(salas.get(indiceSalaActual))
+        } else {
+            self.ganar()
+        }
     }
 
     method ganar() {
@@ -31,6 +44,7 @@ object partida {
     }
 
     method terminar(mensaje) {
+        spawner.detenerEnemigos()
         game.clear()
         game.addVisual(new Cartel(position = game.center(), text = mensaje + "   Puntaje: " + registro.puntaje().toString()))
     }

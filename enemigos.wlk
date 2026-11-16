@@ -1,22 +1,30 @@
 import direcciones.*
 import link.*
+import objetos.*
 import partida.*
+import mapa.*
 
-class Enemigo {
-    var property position
+class Enemigo inherits Personaje {
     const property objetivo = link
     const registro = marcador
     var danioRecibido = 0
+    var property recompensa = sinRecompensa
 
     method initialize() {
+        self.iniciarMovimiento()
+    }
+
+    method iniciarMovimiento() {
         game.onTick(self.intervalo(), self.nombreDelMovimiento(), { self.moverse() })
+    }
+
+    method detenerMovimiento() {
+        game.removeTickEvent(self.nombreDelMovimiento())
     }
 
     method nombreDelMovimiento() = "moverse-" + self.identity().toString()
 
-    method esAtravesable() = false
-
-    method interactuarCon(personaje) {
+    override method interactuarCon(personaje) {
         self.tocarA(personaje)
     }
 
@@ -34,22 +42,27 @@ class Enemigo {
     method estaVencido() = danioRecibido >= self.vida()
 
     method morir() {
-        game.removeTickEvent(self.nombreDelMovimiento())
-        game.removeVisual(self)
+        self.detenerMovimiento()
+        spawner.quitarEnemigo(self)
+        if (game.hasVisual(self)) {
+            game.removeVisual(self)
+        }
         registro.registrarVencido(self)
+        recompensa.soltarEn(position)
     }
 
     method moverse() {
-        const destino = self.direccionElegida().posicionAlLado(position)
-        if (objetivo.position() == destino) {
-            self.tocarA(objetivo)
-        } else if (tablero.estaLibre(destino)) {
-            position = destino
+        if (estado.puedeMover()) {
+            if (tablero.estaAlLado(position, objetivo.position())) {
+                direccionActual = tablero.direccionHaciaVecino(position, objetivo.position())
+                self.tocarA(objetivo)
+            } else if (tablero.hayDireccionLibre(position)) {
+                direccionActual = self.direccionElegida()
+                position = direccionActual.posicionAlLado(position)
+            }
         }
     }
 
-    // Cada tipo de enemigo define estos métodos
-    method image()
     method vida()
     method puntos()
     method intervalo()
@@ -57,26 +70,23 @@ class Enemigo {
 }
 
 class Murcielago inherits Enemigo {
+    override method nombreImagen() = "murcielago"
     override method image() = "murcielago.png"
     override method vida() = 1
     override method puntos() = 50
     override method intervalo() = 400
-    override method direccionElegida() = [arriba, abajo, izquierda, derecha].anyOne()
+    override method direccionElegida() = tablero.direccionesLibres(position).anyOne()
 }
 
 class Soldado inherits Enemigo {
-    override method image() = "soldado.png"
+    override method nombreImagen() = "soldado"
     override method vida() = 2
     override method puntos() = 100
     override method intervalo() = 800
 
     override method direccionElegida() {
-        const dx = self.objetivo().position().x() - self.position().x()
-        const dy = self.objetivo().position().y() - self.position().y()
-        return if (dx.abs() >= dy.abs()) self.horizontal(dx) else self.vertical(dy)
+        return tablero.direccionesLibres(position).min({ dir =>
+            tablero.distancia(dir.posicionAlLado(position), objetivo.position())
+        })
     }
-
-    method horizontal(dx) = if (dx > 0) derecha else izquierda
-
-    method vertical(dy) = if (dy > 0) arriba else abajo
 }

@@ -1,78 +1,94 @@
 
-
 object tablero {
+    const property direcciones = [arriba, abajo, izquierda, derecha]
+
     method validar(position) {
         self.validarDentro(position)
         self.validarAtravesable(position)
     }
 
-
     method validarDentro(position) {
         if (not self.dentro(position)) {
-            self.error(position.toString() + " no está dentro del tablero ")
+            self.error(position.toString() + " no está dentro del tablero")
         }
     }
 
     method dentro(position) {
-        return position.x().between(0, game.width() -1) and position.y().between(0, game.height() -1 )
+        return position.x().between(0, game.width() - 1) and position.y().between(0, game.height() - 1)
     }
 
     method validarAtravesable(position) {
-       if (not game.getObjectsIn(position).all({visual => visual.esAtravesable()})) { 
+        if (not self.esAtravesable(position)) {
             self.error(position.toString() + " no es atravesable")
         }
     }
 
+    method esAtravesable(position) {
+        return game.getObjectsIn(position).all({ visual => visual.esAtravesable() })
+    }
+
+    method puedeIr(position) {
+        return self.dentro(position) and self.esAtravesable(position)
+    }
+
     method estaLibre(position) {
-        return self.dentro(position) and game.getObjectsIn(position).isEmpty()
+        return self.puedeIr(position)
+    }
+
+    method direccionesLibres(position) {
+        return direcciones.filter({ dir => dir.puedeAvanzar(position) })
+    }
+
+    method hayDireccionLibre(position) {
+        return not self.direccionesLibres(position).isEmpty()
+    }
+
+    method estaAlLado(origen, destino) {
+        return direcciones.any({ dir => dir.posicionAlLado(origen) == destino })
+    }
+
+    method direccionHaciaVecino(origen, destino) {
+        return direcciones.find({ dir => dir.posicionAlLado(origen) == destino })
+    }
+
+    method distancia(pos1, pos2) {
+        const dx = pos1.x() - pos2.x()
+        const dy = pos1.y() - pos2.y()
+        return (dx * dx) + (dy * dy)
     }
 }
 
-object arriba {
-    method texto() = "arriba"
+class Direccion {
+    method texto()
+    method posicionAlLado(position)
 
-    method posicionAlLado(position) = position.up(1)
-    
     method siguiente(position) {
-        const nueva = position.up(1) 
+        const nueva = self.posicionAlLado(position)
         tablero.validar(nueva)
         return nueva
+    }
+
+    method puedeAvanzar(position) {
+        return tablero.puedeIr(self.posicionAlLado(position))
     }
 }
 
-object abajo {
-    method texto() = "abajo"
-
-    method posicionAlLado(position) = position.down(1)
-
-    method siguiente(position) {
-        const nueva = position.down(1) 
-        tablero.validar(nueva)
-        return nueva
-    }
+object arriba inherits Direccion {
+    override method texto() = "arriba"
+    override method posicionAlLado(position) = position.up(1)
 }
 
-object derecha {
-    method texto() = "derecha"
-    
-    method posicionAlLado(position) = position.right(1)
-
-    method siguiente(position) {
-        const nueva = position.right(1) 
-        tablero.validar(nueva)
-        return nueva
-    }
-
+object abajo inherits Direccion {
+    override method texto() = "abajo"
+    override method posicionAlLado(position) = position.down(1)
 }
 
-object izquierda{
-    method texto() = "izquierda"
-    
-    method posicionAlLado(position) = position.left(1)
-    
-    method siguiente(position) {
-        const nueva = position.left(1) 
-        tablero.validar(nueva)
-        return nueva
-    }
+object derecha inherits Direccion {
+    override method texto() = "derecha"
+    override method posicionAlLado(position) = position.right(1)
+}
+
+object izquierda inherits Direccion {
+    override method texto() = "izquierda"
+    override method posicionAlLado(position) = position.left(1)
 }
