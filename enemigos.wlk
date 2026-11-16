@@ -1,79 +1,92 @@
 import direcciones.*
 import link.*
 import objetos.*
+import partida.*
+import mapa.*
 
-class Enemigo {
-    var property position = game.at(0, 0)
-    var property estado = normal
-    var property direccionActual = abajo
-    var property armaEquipada = espada
-    var property vidas
-    const puntosQueOtorga
+class Enemigo inherits Personaje {
+    const property objetivo = link
+    const registro = marcador
+    var danioRecibido = 0
     var property recompensa = sinRecompensa
 
-    method image()
-    method intervaloMovimiento()
-    method direccionElegida()
-
-    method esAtravesable() = false
-
-    method alChocarCon(personaje) {
-        personaje.recibirDanio(1)
+    method initialize() {
+        self.iniciarMovimiento()
     }
 
-    method usarArma() {
-        if (estado.puedeMover()) {
-            armaEquipada.usar(self)
-        }
+    method iniciarMovimiento() {
+        game.onTick(self.intervalo(), self.nombreDelMovimiento(), { self.moverse() })
+    }
+
+    method detenerMovimiento() {
+        game.removeTickEvent(self.nombreDelMovimiento())
+    }
+
+    method nombreDelMovimiento() = "moverse-" + self.identity().toString()
+
+    override method interactuarCon(personaje) {
+        self.tocarA(personaje)
+    }
+
+    method tocarA(personaje) {
+        personaje.recibirAtaque(1)
     }
 
     method recibirAtaque(danio) {
-        vidas = (vidas - danio).max(0)
-        if (vidas == 0) {
+        danioRecibido += danio
+        if (self.estaVencido()) {
             self.morir()
         }
     }
 
+    method estaVencido() = danioRecibido >= self.vida()
+
     method morir() {
-        link.sumarPuntos(puntosQueOtorga)
-        game.removeTickEvent(self.idMovimiento())
+        self.detenerMovimiento()
+        spawner.quitarEnemigo(self)
         if (game.hasVisual(self)) {
             game.removeVisual(self)
         }
+        registro.registrarVencido(self)
         recompensa.soltarEn(position)
     }
 
-    method idMovimiento() {
-        return "movimiento-" + self.identity().toString()
-    }
-
-    method iniciarMovimiento() {
-        game.onTick(self.intervaloMovimiento(), self.idMovimiento(), { self.actuar() })
-    }
-
-    method actuar() {
+    method moverse() {
         if (estado.puedeMover()) {
-            if (tablero.estaAlLado(position, link.position())) {
-                direccionActual = tablero.direccionHaciaVecino(position, link.position())
-                self.usarArma()
+            if (tablero.estaAlLado(position, objetivo.position())) {
+                direccionActual = tablero.direccionHaciaVecino(position, objetivo.position())
+                self.tocarA(objetivo)
             } else if (tablero.hayDireccionLibre(position)) {
                 direccionActual = self.direccionElegida()
                 position = direccionActual.posicionAlLado(position)
             }
         }
     }
+
+    method vida()
+    method puntos()
+    method intervalo()
+    method direccionElegida()
 }
 
-class Soldado inherits Enemigo(vidas = 2, puntosQueOtorga = 100) {
-    override method image() {
-        return "soldado-" + estado.forma() + "-" + direccionActual.texto() + ".png" //convertirlo en template method
-    }
+class Murcielago inherits Enemigo {
+    override method nombreImagen() = "murcielago"
+    override method image() = "murcielago.png"
+    override method vida() = 1
+    override method puntos() = 50
+    override method intervalo() = 400
+    override method direccionElegida() = tablero.direccionesLibres(position).anyOne()
+}
 
-    override method intervaloMovimiento() = 1000
+class Soldado inherits Enemigo {
+    override method nombreImagen() = "soldado"
+    override method vida() = 2
+    override method puntos() = 100
+    override method intervalo() = 800
 
     override method direccionElegida() {
         return tablero.direccionesLibres(position).min({ dir =>
-            tablero.distancia(dir.posicionAlLado(position), link.position())
+            tablero.distancia(dir.posicionAlLado(position), objetivo.position())
         })
     }
 }

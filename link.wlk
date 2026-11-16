@@ -1,41 +1,20 @@
 import direcciones.*
+import partida.*
 
-object link {
-    var position = game.at(0, 1) // fijar los property necesarios, redibujar los enemigos cuando aparece un corazon
+class Personaje {
+    var property position = game.at(0, 0)
     var property estado = normal
     var property direccionActual = abajo
     var property armaEquipada = espada
-    var property tieneLlave = false
-    var vidas = 3
-    var property puntos = 0
 
+    // Template Method pedido en la corrección
     method image() {
-        return "link-" + estado.forma() + "-" + direccionActual.texto() + ".png" //convertirlo en template method
+        return self.nombreImagen() + "-" + estado.forma() + "-" + direccionActual.texto() + ".png"
     }
 
-    method position() {
-        return position
-    }
-
-    method position(_position) {
-        position = _position
-    }
+    method nombreImagen()
 
     method esAtravesable() = false
-
-    method recibirAtaque(danio) {
-        self.recibirDanio(danio)
-    }
-
-    method alChocarCon(personaje) {}
-
-    method mover(direccion) {
-        direccionActual = direccion
-        if (estado.puedeMover()) {
-            const nuevaPosition = direccion.siguiente(position)
-            position = nuevaPosition
-        }
-    }
 
     method usarArma() {
         if (estado.puedeMover()) {
@@ -43,28 +22,73 @@ object link {
         }
     }
 
-    method agarrarLlave() {
-        tieneLlave = true
-        game.say(self, "¡Tengo la llave!")
-    }
+    method interactuarCon(personaje) {}
+}
 
-    method curar(cantidad) {
-        vidas = (vidas + cantidad).min(5)
-        game.say(self, "Vidas: " + vidas.toString())
-    }
+object link inherits Personaje(position = game.at(0, 1)) {
+    var tieneLlave = false
+    var corazones = 3
+    var invulnerable = false
+    const juego = partida
 
-    method recibirDanio(cantidad) {
-        vidas = (vidas - cantidad).max(0)
-        if (vidas == 0) {
-            game.say(self, "PERDI")
-            game.schedule(1000, { game.stop() })
-        } else {
-            game.say(self, "¡Auch! Vidas: " + vidas.toString())
+    override method nombreImagen() = "link"
+
+    method tieneLlave() = tieneLlave
+    method corazones() = corazones
+    method invulnerable() = invulnerable
+
+    method mover(direccion) {
+        direccionActual = direccion
+        if (estado.puedeMover()) {
+            self.interactuarConObjetosEn(direccion.posicionAlLado(position))
+            const nuevaPosition = direccion.siguiente(position)
+            position = nuevaPosition
         }
     }
 
-    method sumarPuntos(cantidad) {
-        puntos += cantidad
+    method interactuarConObjetosEn(destino) {
+        game.getObjectsIn(destino).forEach({ objeto => objeto.interactuarCon(self) })
+    }
+
+    method agarrarLlave() {
+        tieneLlave = true
+    }
+
+    method usarLlave() {
+        tieneLlave = false
+    }
+
+    method curar(cantidad) {
+        corazones = (corazones + cantidad).min(5)
+    }
+
+    method recibirAtaque(danio) {
+        if (not invulnerable) {
+            self.perderCorazones(danio)
+        }
+    }
+
+    method perderCorazones(danio) {
+        corazones = (corazones - danio).max(0)
+        invulnerable = true
+        game.schedule(1000, { self.volverAVulnerable() })
+        if (self.sinCorazones()) {
+            juego.perder()
+        }
+    }
+
+    method volverAVulnerable() {
+        invulnerable = false
+    }
+
+    method sinCorazones() = corazones == 0
+
+    method reiniciar() {
+        estado = normal
+        direccionActual = abajo
+        tieneLlave = false
+        corazones = 3
+        invulnerable = false
     }
 }
 
@@ -101,13 +125,12 @@ class GolpeDeEspada {
     const danioGolpe
 
     method image() = "estocada-" + direccion.texto() + ".png"
-    method esAtravesable() = true
-    method recibirAtaque(danio) {}
-    method alChocarCon(personaje) {}
 
     method activar() {
         game.getObjectsIn(position).forEach({ objeto =>
-            objeto.recibirAtaque(danioGolpe)
+            if (objeto != self) {
+                objeto.recibirAtaque(danioGolpe)
+            }
         })
         game.schedule(150, {
             if (game.hasVisual(self)) {
@@ -115,4 +138,8 @@ class GolpeDeEspada {
             }
         })
     }
+
+    method esAtravesable() = true
+    method recibirAtaque(danio) {}
+    method interactuarCon(personaje) {}
 }

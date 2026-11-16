@@ -9,7 +9,7 @@ object tablero {
 
     method validarDentro(position) {
         if (not self.dentro(position)) {
-            self.error(position.toString() + " no está dentro del tablero ")
+            self.error(position.toString() + " no está dentro del tablero")
         }
     }
 
@@ -29,6 +29,10 @@ object tablero {
 
     method puedeIr(position) {
         return self.dentro(position) and self.esAtravesable(position)
+    }
+
+    method estaLibre(position) {
+        return self.puedeIr(position)
     }
 
     method direccionesLibres(position) {

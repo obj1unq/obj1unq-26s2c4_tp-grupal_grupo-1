@@ -1,4 +1,6 @@
 import link.*
+import partida.*
+import mapa.*
 
 object sinRecompensa {
     method soltarEn(posicion) {}
@@ -9,18 +11,19 @@ class ElementoEscenario {
 
     method esAtravesable() = true
     method recibirAtaque(danio) {}
-    method alChocarCon(personaje) {}
+    method interactuarCon(personaje) {}
 
     method soltarEn(posicion) {
         position = posicion
         game.addVisual(self)
+        spawner.redibujarPersonajes()
     }
 }
 
 class Llave inherits ElementoEscenario {
     method image() = "llave.png"
 
-    override method alChocarCon(personaje) {
+    override method interactuarCon(personaje) {
         self.serAgarradaPor(personaje)
     }
 
@@ -35,7 +38,7 @@ class Llave inherits ElementoEscenario {
 class Corazon inherits ElementoEscenario {
     method image() = "corazon.png"
 
-    override method alChocarCon(personaje) {
+    override method interactuarCon(personaje) {
         personaje.curar(1)
         if (game.hasVisual(self)) {
             game.removeVisual(self)
@@ -70,7 +73,7 @@ class Cofre inherits ElementoEscenario {
         self.abrir()
     }
 
-    override method alChocarCon(personaje) {
+    override method interactuarCon(personaje) {
         self.abrir()
     }
 
@@ -83,5 +86,41 @@ class Cofre inherits ElementoEscenario {
     }
 }
 
+class Pared inherits ElementoEscenario {
+    const property image = "pared.png"
+
+    override method esAtravesable() = false
+}
+
+class PuertaConCandado inherits ElementoEscenario {
+    var estado = cerrada
+    const juego = partida
+
+    method image() = "puerta-" + estado.forma() + ".png"
+
+    override method esAtravesable() = estado.puedeMover()
+
+    override method interactuarCon(personaje) {
+        if (not self.esAtravesable()) {
+            self.abrirCon(personaje)
+        }
+    }
+
+    method abrirCon(personaje) {
+        self.validarLlave(personaje)
+        personaje.usarLlave()
+        estado = abierta
+        juego.completarSala()
+    }
+
+    method validarLlave(personaje) {
+        if (not personaje.tieneLlave()) {
+            self.error("Necesitás una llave para abrir esta puerta")
+        }
+    }
+}
+
 const rota = new Estado(forma = "rota", puedeMover = true)
 const sana = new Estado(forma = "sana", puedeMover = false)
+const cerrada = new Estado(forma = "cerrada", puedeMover = false)
+const abierta = new Estado(forma = "abierta", puedeMover = true)

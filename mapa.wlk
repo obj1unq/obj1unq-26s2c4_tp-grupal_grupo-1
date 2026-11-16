@@ -2,21 +2,130 @@ import direcciones.*
 import link.*
 import objetos.*
 import enemigos.*
+import partida.*
+
+object p {
+    method construirEn(posicion) {
+        game.addVisual(new Pared(position = posicion))
+    }
+}
+
+object o {
+    method construirEn(posicion) {}
+}
+
+object j {
+    const jugador = link
+    method construirEn(posicion) {
+        jugador.position(posicion)
+    }
+}
+
+object l {
+    method construirEn(posicion) {
+        game.addVisual(new Llave(position = posicion))
+    }
+}
+
+object c {
+    method construirEn(posicion) {
+        game.addVisual(new Cofre(position = posicion, recompensa = new Llave()))
+    }
+}
+
+object v {
+    method construirEn(posicion) {
+        game.addVisual(new Vasija(position = posicion))
+    }
+}
+
+object e {
+    method construirEn(posicion) {
+        game.addVisual(new Pared(position = posicion, image = "puerta-entrada.png"))
+    }
+}
+
+object s {
+    method construirEn(posicion) {
+        game.addVisual(new PuertaConCandado(position = posicion))
+    }
+}
+
+object m {
+    method construirEn(posicion) {
+        spawner.spawnearEn(fabricanteMurcielago, posicion)
+    }
+}
+
+object g {
+    method construirEn(posicion) {
+        spawner.spawnearEn(fabricanteSoldado, posicion)
+    }
+}
+
+const sala1 = [
+    [p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p],
+    [p, l, o, p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, p, o, o, o, o, o, o, o, o, m, o, o, o, o, o, o, s],
+    [p, p, v, p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, p, p, o, o, o, o, p, p, o, o, o, o, o, p],
+    [p, o, o, o, o, o, p, p, o, o, o, o, p, p, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, g, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, j, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, p, e, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p]
+]
+
+const sala2 = [
+    [p, p, p, p, p, p, p, p, p, s, p, p, p, p, p, p, p, p, p, p],
+    [p, o, o, o, o, p, o, o, o, o, o, o, o, o, p, o, o, c, o, p],
+    [p, o, o, o, o, p, o, o, o, o, o, o, o, o, p, o, o, o, o, p],
+    [p, o, o, o, o, v, o, o, o, p, p, o, o, o, v, o, o, o, o, p],
+    [p, o, o, o, o, p, o, o, o, p, p, o, o, o, p, p, p, p, p, p],
+    [p, o, o, o, o, p, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, p, v, p, p, p, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, p, p, p, p, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, p, p, o, o, o, o, o, o, o, o, p, p, o, o, o, p],
+    [p, j, o, o, p, p, o, o, o, o, o, o, o, o, p, p, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, e, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p]
+]
+
+const sala3 = [
+    [p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p],
+    [p, c, v, o, o, o, o, o, o, p, p, o, o, o, o, o, o, o, o, p],
+    [p, v, v, o, o, o, o, o, o, p, p, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, p, p, o, o, o, o, o, o, p, p, o, o, o, o, p],
+    [p, o, o, o, o, p, p, o, o, o, o, o, o, p, p, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, p, p, p, p, o, o, o, o, o, o, o, s],
+    [p, o, o, o, o, o, o, o, p, p, p, p, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, p, p, o, o, o, o, o, o, p, p, o, o, o, o, p],
+    [p, o, o, o, o, p, p, o, o, o, o, o, o, p, p, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, j, o, o, o, o, o, o, o, o, o, p],
+    [p, p, p, p, p, p, p, p, p, e, p, p, p, p, p, p, p, p, p, p]
+]
 
 object randomizer {
     method position() {
         return game.at(
-            (0 .. game.width() - 1).anyOne(),
-            (0 .. game.height() - 1).anyOne()
+            (1 .. game.width() - 2).anyOne(),
+            (1 .. game.height() - 3).anyOne()
         )
     }
 
     method emptyPosition() {
-        const position = self.position()
-        const objetosEnPos = game.getObjectsIn(position)
-
-        if (objetosEnPos.isEmpty()) {
-            return position
+        const pos = self.position()
+        if (game.getObjectsIn(pos).isEmpty() and pos != link.position() and not tablero.estaAlLado(pos, link.position())) {
+            return pos
         } else {
             return self.emptyPosition()
         }
@@ -24,11 +133,14 @@ object randomizer {
 }
 
 object spawner {
-    const property spawneados = #{}
+    const enemigosActivos = #{}
 
     method spawnear(fabrica) {
-        const nuevo = fabrica.crear(randomizer.emptyPosition())
-        spawneados.add(nuevo)
+        self.spawnearEn(fabrica, randomizer.emptyPosition())
+    }
+
+    method spawnearEn(fabrica, posicion) {
+        const nuevo = fabrica.crear(posicion)
         game.addVisual(nuevo)
     }
 
@@ -40,21 +152,29 @@ object spawner {
         self.spawnearVarios(fabrica, (min .. max).anyOne())
     }
 
-    method quitar(spawneado) {
-        if (game.hasVisual(spawneado)) {
-            game.removeVisual(spawneado)
+    method registrarEnemigo(enemigo) {
+        enemigosActivos.add(enemigo)
+    }
+
+    method quitarEnemigo(enemigo) {
+        enemigosActivos.remove(enemigo)
+    }
+
+    method detenerEnemigos() {
+        enemigosActivos.forEach({ enemigo => enemigo.detenerMovimiento() })
+        enemigosActivos.clear()
+    }
+
+    method redibujarPersonajes() {
+        enemigosActivos.forEach({ enemigo => self.redibujar(enemigo) })
+        self.redibujar(link)
+    }
+
+    method redibujar(visual) {
+        if (game.hasVisual(visual)) {
+            game.removeVisual(visual)
+            game.addVisual(visual)
         }
-        spawneados.remove(spawneado)
-    }
-
-    method limpiarSala() {
-        spawneados.forEach({ elem => self.quitar(elem) })
-    }
-}
-
-object fabricanteCofre {
-    method crear(position) {
-        return new Cofre(position = position, recompensa = new Llave())
     }
 }
 
@@ -70,23 +190,43 @@ object fabricanteVasija {
 
 object fabricanteSoldado {
     method crear(position) {
-        const soldado = new Soldado(position = position, recompensa = new Corazon())
-        soldado.iniciarMovimiento()
+        const soldado = new Soldado(position = position, recompensa = self.recompensaAlAzar())
+        spawner.registrarEnemigo(soldado)
         return soldado
     }
+
+    method recompensaAlAzar() {
+        return [sinRecompensa, new Corazon()].anyOne()
+    }
+}
+
+object fabricanteMurcielago {
+    method crear(position) {
+        const murcielago = new Murcielago(position = position)
+        spawner.registrarEnemigo(murcielago)
+        return murcielago
+    }
+}
+
+object hud {
+    const jugador = link
+    const registro = marcador
+
+    method position() = game.at(10, 14)
+
+    method text() = "Corazones: " + jugador.corazones().toString() + "   Llave: " + self.textoLlave() + "   Puntaje: " + registro.puntaje().toString()
+
+    method textoLlave() = if (jugador.tieneLlave()) "sí" else "no"
+
+    method textColor() = "FFFFFFFF"
+
+    method esAtravesable() = false
+    method recibirAtaque(danio) {}
+    method interactuarCon(personaje) {}
 }
 
 object nivel {
     const jugador = link
-
-    method iniciar() {
-        spawner.spawnear(fabricanteCofre)
-        spawner.spawnearEnRango(fabricanteVasija, 3, 10)
-        spawner.spawnearEnRango(fabricanteSoldado, 3, 5)
-        game.addVisual(jugador)
-        self.configurarTeclas()
-        self.configurarColisiones()
-    }
 
     method configurarTeclas() {
         keyboard.left().onPressDo({ jugador.mover(izquierda) })
@@ -97,7 +237,30 @@ object nivel {
         keyboard.space().onPressDo({ jugador.usarArma() })
     }
 
-    method configurarColisiones() {
-        game.onCollideDo(jugador, { objeto => objeto.alChocarCon(jugador) })
+    method cargarSala(filas) {
+        spawner.detenerEnemigos()
+        game.clear()
+        self.armar(filas)
+        game.addVisual(jugador)
+        game.addVisual(hud)
+        self.poblarAlAzar()
+        self.configurarTeclas()
+    }
+
+    method armar(filas) {
+        const alto = filas.size()
+        const indices = new Range(start = 0, end = alto - 1)
+        indices.forEach({ i => self.armarFila(filas.get(i), alto - 1 - i) })
+    }
+
+    method armarFila(fila, y) {
+        const columnas = new Range(start = 0, end = fila.size() - 1)
+        columnas.forEach({ x => fila.get(x).construirEn(game.at(x, y)) })
+    }
+
+    method poblarAlAzar() {
+        spawner.spawnearEnRango(fabricanteVasija, 3, 6)
+        spawner.spawnearEnRango(fabricanteMurcielago, 1, 2)
+        spawner.spawnearEnRango(fabricanteSoldado, 1, 2)
     }
 }
