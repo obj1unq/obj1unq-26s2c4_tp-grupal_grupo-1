@@ -66,7 +66,7 @@ class Enemigo {
 
 class Soldado inherits Enemigo(vidas = 2, puntosQueOtorga = 100) {
     override method image() {
-        return "soldado-" + estado.forma() + "-" + direccionActual.texto() + ".png"
+        return "soldado-" + estado.forma() + "-" + direccionActual.texto() + ".png" //convertirlo en template method
     }
 
     override method intervaloMovimiento() = 1000

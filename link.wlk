@@ -1,16 +1,16 @@
 import direcciones.*
 
 object link {
-    var position = game.at(0, 1)
+    var position = game.at(0, 1) // fijar los property necesarios, redibujar los enemigos cuando aparece un corazon
     var property estado = normal
     var property direccionActual = abajo
     var property armaEquipada = espada
     var property tieneLlave = false
-    var property vidas = 3
+    var vidas = 3
     var property puntos = 0
 
     method image() {
-        return "link-" + estado.forma() + "-" + direccionActual.texto() + ".png"
+        return "link-" + estado.forma() + "-" + direccionActual.texto() + ".png" //convertirlo en template method
     }
 
     method position() {
