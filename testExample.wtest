@@ -1,9 +1,160 @@
-import example.pepita
+import link.*
+import direcciones.*
+import objetos.*
+import enemigos.*
+import mapa.*
+import partida.*
 
-describe "group of tests for pepita" {
+describe "group of tests for link" {
+    method initialize() {
+        game.clear()
+        game.height(15)
+        game.width(20)
+        link.reiniciar()
+        link.position(game.at(0, 1))
+    }
 
-  test "pepita has initial energy" {
-    assert.equals(100, pepita.energy())
-  }
+    test "link mover arriba" {
+        link.mover(arriba)
+        assert.equals(game.at(0, 2), link.position())
+    }
 
+    test "link mover abajo" {
+        link.mover(abajo)
+        assert.equals(game.at(0, 0), link.position())
+    }
+
+    test "link mover derecha" {
+        link.mover(derecha)
+        assert.equals(game.at(1, 1), link.position())
+    }
+
+    test "link mover izquierda desde (1,1)" {
+        link.position(game.at(1, 1))
+        link.mover(izquierda)
+        assert.equals(game.at(0, 1), link.position())
+    }
+}
+
+describe "link cambia de imagen al moverse" {
+    method initialize() {
+        game.clear()
+        game.height(15)
+        game.width(20)
+        link.reiniciar()
+        link.position(game.at(1, 1))
+    }
+
+    test "link mover arriba" {
+        link.mover(arriba)
+        assert.equals("link-normal-arriba.png", link.image())
+    }
+
+    test "link mover abajo" {
+        link.mover(abajo)
+        assert.equals("link-normal-abajo.png", link.image())
+    }
+
+    test "link mover derecha" {
+        link.mover(derecha)
+        assert.equals("link-normal-derecha.png", link.image())
+    }
+
+    test "link mover izquierda" {
+        link.mover(izquierda)
+        assert.equals("link-normal-izquierda.png", link.image())
+    }
+}
+
+describe "link cambia de imagen pero no se mueve fuera del tablero" {
+    method initialize() {
+        game.clear()
+        game.height(15)
+        game.width(20)
+        link.reiniciar()
+        link.position(game.at(0, 0))
+    }
+
+    test "link mover abajo en el borde lanza excepcion" {
+        assert.throwsException({ link.mover(abajo) })
+        assert.equals("link-normal-abajo.png", link.image())
+        assert.equals(game.at(0, 0), link.position())
+    }
+
+    test "link mover izquierda en el borde lanza excepcion" {
+        assert.throwsException({ link.mover(izquierda) })
+        assert.equals("link-normal-izquierda.png", link.image())
+        assert.equals(game.at(0, 0), link.position())
+    }
+}
+
+describe "tests de la logica de ataque y arma" {
+    method initialize() {
+        game.clear()
+        game.height(15)
+        game.width(20)
+        link.reiniciar()
+    }
+
+    test "link cambia su estado a ataque al usar la espada" {
+        link.usarArma()
+        assert.equals(ataque, link.estado())
+    }
+
+    test "la posicion objetivo del ataque se calcula bien segun hacia donde mira Link" {
+        link.position(game.at(5, 5))
+
+        link.direccionActual(arriba)
+        assert.equals(game.at(5, 6), link.direccionActual().posicionAlLado(link.position()))
+
+        link.direccionActual(derecha)
+        assert.equals(game.at(6, 5), link.direccionActual().posicionAlLado(link.position()))
+
+        link.direccionActual(abajo)
+        assert.equals(game.at(5, 4), link.direccionActual().posicionAlLado(link.position()))
+
+        link.direccionActual(izquierda)
+        assert.equals(game.at(4, 5), link.direccionActual().posicionAlLado(link.position()))
+    }
+
+    test "link no puede moverse si ya esta en estado de ataque" {
+        const posicion = game.at(5, 5)
+        link.position(posicion)
+        link.estado(ataque)
+        link.mover(derecha)
+
+        assert.equals(posicion, link.position())
+    }
+}
+
+describe "tests de interactividad de objetos y enemigos" {
+    method initialize() {
+        game.clear()
+        game.height(15)
+        game.width(20)
+        link.reiniciar()
+    }
+
+    test "una vasija recien creada esta sana y bloquea el paso" {
+        const vasija = new Vasija(position = game.at(4, 3))
+        assert.equals("vasija-sana.png", vasija.image())
+        assert.notThat(vasija.esAtravesable())
+    }
+
+    test "al recibir daño la vasija se rompe y permite el paso" {
+        const vasija = new Vasija(position = game.at(4, 3))
+        vasija.recibirAtaque(1)
+        assert.equals("vasija-rota.png", vasija.image())
+        assert.that(vasija.esAtravesable())
+    }
+
+    test "el soldado esquiva una pared para acercarse a Link" {
+        link.position(game.at(5, 5))
+        game.addVisual(new Pared(position = game.at(5, 4)))
+        const soldado = new Soldado(position = game.at(5, 3))
+
+        soldado.moverse()
+        assert.notEquals(game.at(5, 4), soldado.position())
+        assert.notEquals(game.at(5, 3), soldado.position())
+    }
 }

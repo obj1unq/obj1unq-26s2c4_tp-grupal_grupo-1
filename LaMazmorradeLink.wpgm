@@ -1,0 +1,13 @@
+import wollok.game.*
+import partida.*
+
+program LinkGame {
+    game.title("La Mazmorra de Link")
+    game.height(15)
+    game.width(20)
+    game.boardGround("fondo.png")
+
+    partida.iniciar()
+
+    game.start()
+}
