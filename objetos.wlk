@@ -53,9 +53,12 @@ class Vasija inherits ElementoEscenario {
     method image() = "vasija-" + estado.forma() + ".png"
 
     override method recibirAtaque(danio) {
-        estado = rota
-        recompensa.soltarEn(position)
-        recompensa = sinRecompensa
+        if (estado == sana) {
+            estado = rota
+            recompensa.soltarEn(position)
+            recompensa = sinRecompensa
+            spawner.redibujarPersonajes()
+        }
     }
 
     override method esAtravesable() = estado.puedeMover()

@@ -166,8 +166,8 @@ object spawner {
     }
 
     method redibujarPersonajes() {
-        enemigosActivos.forEach({ enemigo => self.redibujar(enemigo) })
         self.redibujar(link)
+        enemigosActivos.forEach({ enemigo => self.redibujar(enemigo) })
     }
 
     method redibujar(visual) {
@@ -237,13 +237,14 @@ object nivel {
         keyboard.space().onPressDo({ jugador.usarArma() })
     }
 
-    method cargarSala(filas) {
+method cargarSala(filas) {
         spawner.detenerEnemigos()
         game.clear()
         self.armar(filas)
         game.addVisual(jugador)
-        game.addVisual(hud)
         self.poblarAlAzar()
+        spawner.redibujarPersonajes()
+        game.addVisual(hud)
         self.configurarTeclas()
     }
 
