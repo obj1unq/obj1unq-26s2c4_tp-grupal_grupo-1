@@ -51,6 +51,20 @@ object tablero {
         return direcciones.find({ dir => dir.posicionAlLado(origen) == destino })
     }
 
+    method estanAlineados(origen, destino) {
+        return origen != destino and (origen.x() == destino.x() or origen.y() == destino.y())
+    }
+
+    method direccionHacia(origen, destino) {
+        const dx = destino.x() - origen.x()
+        const dy = destino.y() - origen.y()
+        return if (dx.abs() >= dy.abs()) {
+            if (dx > 0) derecha else izquierda
+        } else {
+            if (dy > 0) arriba else abajo
+        }
+    }
+
     method distancia(pos1, pos2) {
         const dx = pos1.x() - pos2.x()
         const dy = pos1.y() - pos2.y()

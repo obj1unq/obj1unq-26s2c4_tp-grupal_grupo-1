@@ -157,4 +157,22 @@ describe "tests de interactividad de objetos y enemigos" {
         assert.notEquals(game.at(5, 4), soldado.position())
         assert.notEquals(game.at(5, 3), soldado.position())
     }
+
+    test "el murcielago espera en standby, se activa al acercarse Link y cambia a derrotado al morir" {
+        link.position(game.at(1, 1))
+        const murcielago = new Murcielago(position = game.at(15, 10))
+        game.addVisual(murcielago)
+
+        murcielago.moverse()
+        assert.equals("murcielago-standby.png", murcielago.image())
+        assert.equals(game.at(15, 10), murcielago.position())
+
+        link.position(game.at(13, 10))
+        murcielago.moverse()
+        assert.equals("murcielago-aleteo-1.png", murcielago.image())
+
+        murcielago.recibirAtaque(1)
+        assert.equals("murcielago-derrotado.png", murcielago.image())
+        assert.that(murcielago.esAtravesable())
+    }
 }

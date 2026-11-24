@@ -7,7 +7,7 @@ class Personaje {
     var property direccionActual = abajo
     var property armaEquipada = espada
 
-    // Template Method pedido en la corrección
+    // Template Method
     method image() {
         return self.nombreImagen() + "-" + estado.forma() + "-" + direccionActual.texto() + ".png"
     }
@@ -40,9 +40,11 @@ object link inherits Personaje(position = game.at(0, 1)) {
     method mover(direccion) {
         direccionActual = direccion
         if (estado.puedeMover()) {
+            const posicionAnterior = position
             self.interactuarConObjetosEn(direccion.posicionAlLado(position))
-            const nuevaPosition = direccion.siguiente(position)
-            position = nuevaPosition
+            if (position == posicionAnterior) {
+                position = direccion.siguiente(position)
+            }
         }
     }
 
@@ -86,6 +88,7 @@ object link inherits Personaje(position = game.at(0, 1)) {
     method reiniciar() {
         estado = normal
         direccionActual = abajo
+        armaEquipada = espada
         tieneLlave = false
         corazones = 3
         invulnerable = false
@@ -102,6 +105,8 @@ const ataque = new Estado(forma = "ataque", puedeMover = false)
 
 object espada {
     const property danio = 1
+
+    method estaEnRango(origen, destino) = tablero.estaAlLado(origen, destino)
 
     method usar(personaje) {
         personaje.estado(ataque)
