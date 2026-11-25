@@ -2,6 +2,7 @@ import direcciones.*
 import link.*
 import partida.*
 import mapa.*
+import sonido.*
 
 object sinRecompensa {
     method soltarEn(posicion) {}
@@ -35,6 +36,7 @@ class Llave inherits ElementoEscenario {
     }
 
     method serAgarradaPor(personaje) {
+        sonido.item()
         personaje.agarrarLlave()
         if (game.hasVisual(self)) {
             game.removeVisual(self)
@@ -46,6 +48,7 @@ class Corazon inherits ElementoEscenario {
     method image() = "corazon.png"
 
     override method alChocarCon(personaje) {
+        sonido.item()
         personaje.curar(1)
         if (game.hasVisual(self)) {
             game.removeVisual(self)
@@ -59,6 +62,7 @@ class RefillFlechas inherits ElementoEscenario {
     method image() = "flecha-derecha.png"
 
     override method alChocarCon(personaje) {
+        sonido.item()
         personaje.agregarFlechas(cantidad)
         if (game.hasVisual(self)) {
             game.removeVisual(self)
@@ -74,6 +78,7 @@ class Vasija inherits ElementoEscenario {
 
     override method recibirAtaque(danio) {
         if (estado == sana) {
+            sonido.vasija()
             estado = rota
             recompensa.soltarEn(position)
             recompensa = sinRecompensa
@@ -171,6 +176,7 @@ class Bomba inherits ElementoEscenario {
     method image() = "place_holder_negro.png"
 
     override method alChocarCon(personaje) {
+        sonido.item()
         personaje.agarrarBomba()
         if (game.hasVisual(self)) {
             game.removeVisual(self)
@@ -182,6 +188,7 @@ class Pocion inherits ElementoEscenario {
     method image() = "place_holder_verde.png"
 
     override method alChocarCon(personaje) {
+        sonido.item()
         personaje.agarrarPocion()
         if (game.hasVisual(self)) {
             game.removeVisual(self)
@@ -197,6 +204,7 @@ class BombaActiva inherits ElementoEscenario {
     }
 
     method explotar() {
+        sonido.explosion()
         if (game.hasVisual(self)) {
             game.removeVisual(self)
         }
@@ -232,6 +240,7 @@ class Explosion inherits ElementoEscenario {
         })
     }
 }
+
 class ParedAgrietada inherits ElementoEscenario {
     var estado = puertaCerrada
     const juego = partida

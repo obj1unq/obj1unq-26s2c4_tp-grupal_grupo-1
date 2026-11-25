@@ -1,4 +1,5 @@
 import mapa.*
+import sonido.*
 
 object marcador {
     const enemigosVencidos = []
@@ -18,7 +19,7 @@ object marcador {
 object partida {
     const registro = marcador
     const salas = [sala1, sala2, sala3, sala4]
-    var indiceSalaActual = 3 //CMABIAR SOLO LO PONGO PARA PROBAR LA SALA 4
+    var indiceSalaActual = 0
 
     method iniciar() {
         indiceSalaActual = 0
@@ -29,6 +30,7 @@ object partida {
         registro.completarSala()
         indiceSalaActual += 1
         if (indiceSalaActual < salas.size()) {
+            sonido.salaCompletada()
             nivel.cargarSala(salas.get(indiceSalaActual))
         } else {
             self.ganar()
@@ -36,10 +38,12 @@ object partida {
     }
 
     method ganar() {
+        sonido.victoria()
         self.terminar("¡GANASTE!")
     }
 
     method perder() {
+        sonido.gameOver()
         self.terminar("GAME OVER")
     }
 
