@@ -225,6 +225,59 @@ class Explosion inherits ElementoEscenario {
         })
     }
 }
+class ParedAgrietada inherits ElementoEscenario {
+    var estado = puertaCerrada
+    const juego = partida
+
+    method image() {
+        return if (estado.esAtravesable()) "puerta-abierta-arriba.png" else "place_holder_cyan.png"
+    }
+
+    override method esAtravesable() {
+        return estado.esAtravesable()
+    }
+
+    override method recibirAtaque(danio) {}
+
+    override method recibirExplosion(danio) {
+        estado = puertaAbierta
+    }
+
+    override method alChocarCon(personaje) {
+        estado.alChocar(self, personaje)
+    }
+
+    method cruzar() {
+        juego.completarSala()
+    }
+}
+
+class PuertaPorEnemigos inherits ElementoEscenario {
+    const orientacion = derecha
+    const juego = partida
+
+    method image() {
+        if (self.estaAbierta()) {
+            return "puerta-abierta-" + orientacion.texto() + ".png"
+        } else {
+            return "place_holder_cyan.png"
+        }
+    }
+
+    method estaAbierta() {
+        return !spawner.hayEnemigos()
+    }
+
+    override method esAtravesable() {
+        return self.estaAbierta()
+    }
+
+    override method alChocarCon(personaje) {
+        if (self.estaAbierta()) {
+            juego.completarSala()
+        }
+    }
+}
 
 const rota = new Estado(forma = "rota", puedeMover = true)
 const sana = new Estado(forma = "sana", puedeMover = false)

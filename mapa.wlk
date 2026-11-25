@@ -66,6 +66,26 @@ object g {
         spawner.spawnearEn(fabricanteSoldado, posicion)
     }
 }
+object a {
+    method construirEn(posicion) {
+        game.addVisual(new ParedAgrietada(position = posicion))
+    }
+}
+
+object d {
+    method construirEn(posicion) {
+        const lado = tablero.orientacionBorde(posicion)
+        game.addVisual(new PuertaPorEnemigos(position = posicion, orientacion = lado))
+    }
+}
+
+object t {
+    method construirEn(posicion) {
+        const estatua = new Estatua(position = posicion, direccion = abajo)
+        spawner.registrarTrampa(estatua)
+        game.addVisual(estatua)
+    }
+}
 
 const sala1 = [
     [p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p],
@@ -85,8 +105,8 @@ const sala1 = [
 ]
 
 const sala2 = [
-    [p, p, p, p, p, p, p, p, p, s, p, p, p, p, p, p, p, p, p, p],
-    [p, o, o, o, o, p, o, o, o, o, o, o, o, o, p, o, o, c, o, p],
+    [p, p, p, p, p, p, p, p, p, a, p, p, p, p, p, p, p, p, p, p],
+    [p, o, o, o, o, p, o, t, o, o, o, o, o, o, p, o, o, c, o, p],
     [p, o, o, o, o, p, o, o, o, o, o, o, o, o, p, o, o, o, o, p],
     [p, o, o, o, o, v, o, o, o, p, p, o, o, o, v, o, o, o, o, p],
     [p, o, o, o, o, p, o, o, o, p, p, o, o, o, p, p, p, p, p, p],
@@ -103,12 +123,12 @@ const sala2 = [
 
 const sala3 = [
     [p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p],
-    [p, c, v, o, o, o, o, o, o, p, p, o, o, o, o, o, o, o, o, p],
+    [p, c, v, o, o, o, o, o, o, p, p, o, o, o, o, t, o, o, o, p],
     [p, v, v, o, o, o, o, o, o, p, p, o, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, p, p, o, o, o, o, o, o, p, p, o, o, o, o, p],
     [p, o, o, o, o, p, p, o, o, o, o, o, o, p, p, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
-    [p, o, o, o, o, o, o, o, p, p, p, p, o, o, o, o, o, o, o, s],
+    [p, o, o, o, o, o, o, o, p, p, p, p, o, o, o, o, o, o, o, d],
     [p, o, o, o, o, o, o, o, p, p, p, p, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, p, p, o, o, o, o, o, o, p, p, o, o, o, o, p],
@@ -167,6 +187,7 @@ object spawner {
     method detenerEnemigos() {
         enemigosActivos.forEach({ enemigo => enemigo.detenerMovimiento() })
         enemigosActivos.clear()
+        self.detenerTrampas()
     }
 
     method redibujarPersonajes() {
@@ -179,6 +200,25 @@ object spawner {
             game.removeVisual(visual)
             game.addVisual(visual)
         }
+    }
+
+    const trampasActivas = #{}
+
+    method hayEnemigos() {
+        return !enemigosActivos.isEmpty()
+    }
+
+    method registrarTrampa(trampa) {
+        trampasActivas.add(trampa)
+    }
+
+    method quitarTrampa(trampa) {
+        trampasActivas.remove(trampa)
+    }
+
+    method detenerTrampas() {
+        trampasActivas.forEach({ trampa => trampa.detener() })
+        trampasActivas.clear()
     }
 }
 
