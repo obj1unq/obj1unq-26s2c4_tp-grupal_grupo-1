@@ -87,6 +87,7 @@ object tablero {
 class Direccion {
     method texto()
     method posicionAlLado(position)
+    method sufijoEspalda() = ""
 
     method siguiente(position) {
         const nueva = self.posicionAlLado(position)
@@ -102,6 +103,7 @@ class Direccion {
 object arriba inherits Direccion {
     override method texto() = "arriba"
     override method posicionAlLado(position) = position.up(1)
+    override method sufijoEspalda() = "-espalda"
 }
 
 object abajo inherits Direccion {

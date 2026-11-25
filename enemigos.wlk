@@ -33,26 +33,29 @@ class Enemigo inherits Personaje {
         personaje.recibirAtaque(1)
     }
 
-    method recibirAtaque(danio) {
+    override method recibirAtaque(danio) {
         activo = true
         danioRecibido += danio
         if (self.estaVencido()) {
             self.morir()
         }
     }
+
     override method recibirExplosion(danio) {
         self.recibirAtaque(danio)
     }
 
     method estaVencido() = danioRecibido >= self.vida()
 
-    method morir() {
+    method detenerYDesregistrar() {
         self.detenerMovimiento()
         spawner.quitarEnemigo(self)
-        if (game.hasVisual(self)) {
-            game.removeVisual(self)
-        }
         registro.registrarVencido(self)
+    }
+
+    method morir() {
+        self.detenerYDesregistrar()
+        self.quitarDelTablero()
         recompensa.soltarEn(position)
     }
 
@@ -67,12 +70,16 @@ class Enemigo inherits Personaje {
             activo = true
         }
         if (activo and estado.puedeMover()) {
-            if (self.puedeAtacar()) {
-                direccionActual = tablero.direccionHacia(position, objetivo.position())
-                self.atacar()
-            } else {
-                self.desplazarse()
-            }
+            self.actuarEnTurno()
+        }
+    }
+
+    method actuarEnTurno() {
+        if (self.puedeAtacar()) {
+            direccionActual = tablero.direccionHacia(position, objetivo.position())
+            self.atacar()
+        } else {
+            self.desplazarse()
         }
     }
 
@@ -89,9 +96,7 @@ class Enemigo inherits Personaje {
         }
     }
 
-    method direccionElegida() {
-        return self.direccionHaciaObjetivo()
-    }
+    method direccionElegida() = self.direccionHaciaObjetivo()
 
     method direccionHaciaObjetivo() {
         return tablero.direccionesLibres(position).min({ dir =>
@@ -114,9 +119,11 @@ class Soldado inherits Enemigo {
 class EnemigoADistancia inherits Enemigo {
     override method rangoActivacion() = 6
 
+    method puedeDispararDesde(origen) = armaEquipada.estaEnRango(origen, objetivo.position())
+
     override method direccionElegida() {
         return tablero.direccionesLibres(position).findOrElse(
-            { dir => armaEquipada.estaEnRango(dir.posicionAlLado(position), objetivo.position()) },
+            { dir => self.puedeDispararDesde(dir.posicionAlLado(position)) },
             { self.direccionHaciaObjetivo() }
         )
     }
@@ -150,10 +157,9 @@ class Canionero inherits EnemigoADistancia {
 class Murcielago inherits Enemigo {
     var modo = standbyMurcielago
     var frameActual = 1
-    const rangoActivacion = 3
 
     override method nombreImagen() = "murcielago"
-    override method image() = self.nombreImagen() + "-" + modo.sufijoImagen(self) + ".png"
+    override method sufijoImagen() = modo.sufijoImagen(self)
     override method vida() = 1
     override method puntos() = 50
     override method intervalo() = 400
@@ -184,20 +190,14 @@ class Murcielago inherits Enemigo {
 
     override method morir() {
         modo = derrotadoMurcielago
-        self.detenerMovimiento()
-        spawner.quitarEnemigo(self)
-        registro.registrarVencido(self)
+        self.detenerYDesregistrar()
 
         game.schedule(500, {
             if (game.hasVisual(self)) {
-                game.removeVisual(self)
+                self.quitarDelTablero()
                 recompensa.soltarEn(position)
             }
         })
-    }
-
-    method objetivoEnRango() {
-        return tablero.distancia(position, objetivo.position()) <= rangoActivacion * rangoActivacion
     }
 
     method despertar() {
@@ -252,7 +252,7 @@ object standbyMurcielago {
     method puedeRecibirDanio() = true
 
     method actuar(murcielago) {
-        if (murcielago.objetivoEnRango()) {
+        if (murcielago.objetivoEnRangoDeActivacion()) {
             murcielago.despertar()
         }
     }
@@ -293,14 +293,9 @@ class Estatua inherits ElementoEscenario {
         self.iniciarDisparos()
     }
 
-    method image() {
-        return "place_holder_rosa.png"
-    }
-
-    override method esAtravesable() {
-        return false
-    }
-
+    method image() = "estatua.png"
+    override method esAtravesable() = false
+    override method detieneProyectil() = false
     override method recibirExplosion(danio) {}
 
     method iniciarDisparos() {
@@ -311,117 +306,181 @@ class Estatua inherits ElementoEscenario {
         game.removeTickEvent(self.nombreTick())
     }
 
-    method nombreTick() {
-        return "estatua-" + self.identity().toString()
-    }
+    method nombreTick() = "estatua-" + self.identity().toString()
 
     method disparar() {
-        const origen = direccion.posicionAlLado(position)
-        if (tablero.dentro(origen)) {
-            const proyectil = new Proyectil(position = origen, direccion = direccion)
-            spawner.registrarTrampa(proyectil)
-            game.addVisual(proyectil)
-        }
+        new Flecha(position = position, direccion = direccion).lanzar()
     }
 }
 
-class Proyectil inherits ElementoEscenario {
-    const direccion
+class TridenteArrojado inherits Proyectil {
+    const orientaciones = [arriba, derecha, abajo, izquierda]
+    var indiceFrame = 0
 
-    method initialize() {
-        game.onTick(250, self.nombreTick(), { self.avanzar() })
-    }
+    override method image() = "tridente-" + orientaciones.get(indiceFrame).texto() + ".png"
+    override method danio() = 2
+    override method intervalo() = 140
 
-    method image() {
-        return "place_holder_amarillo.png"
-    }
-
-    method nombreTick() {
-        return "proyectil-" + self.identity().toString()
-    }
-
-    method detener() {
-        game.removeTickEvent(self.nombreTick())
-    }
-
-    method avanzar() {
-        const siguiente = direccion.posicionAlLado(position)
-        if (siguiente == link.position()) {
-            link.recibirAtaque(1)
-            self.destruir()
-        } else if (tablero.puedeIr(siguiente)) {
-            position = siguiente
-        } else {
-            self.destruir()
-        }
-    }
-
-    method destruir() {
-        self.detener()
-        spawner.quitarTrampa(self)
-        if (game.hasVisual(self)) {
-            game.removeVisual(self)
-        }
+    override method avanzar() {
+        indiceFrame = (indiceFrame + 1) % orientaciones.size()
+        super()
     }
 }
 
-class Jefe inherits Enemigo {
-    var turnos = 0
+class FuegoJefe inherits ElementoEscenario {
+    var frame = 1
 
-    override method nombreImagen() {
-        return "jefe"
+    method image() = "fuego-" + frame.toString() + ".png"
+
+    method cambiarFrame(numero) {
+        frame = numero
     }
 
-    override method image() {
-        return "place_holder_rosa.png"
+    override method alChocarCon(personaje) {
+        personaje.recibirAtaque(1)
+    }
+}
+
+class OleadaDeFuego {
+    const posiciones
+    const objetivo
+    const fuegos = []
+
+    method iniciar() {
+        posiciones.forEach({ pos =>
+            const fuego = new FuegoJefe(position = pos)
+            fuegos.add(fuego)
+            game.addVisual(fuego)
+        })
+        self.danarSiEstaObjetivo()
+        game.schedule(150, { self.avanzarFrame(2) })
+        game.schedule(300, { self.avanzarFrame(3) })
+        game.schedule(450, { self.avanzarFrame(4) })
+        game.schedule(600, { self.apagar() })
     }
 
-    override method vida() {
-        return 6
+    method sigueActiva() = not fuegos.isEmpty() and game.hasVisual(fuegos.first())
+
+    method avanzarFrame(numero) {
+        if (self.sigueActiva()) {
+            fuegos.forEach({ fuego => fuego.cambiarFrame(numero) })
+            self.danarSiEstaObjetivo()
+        }
     }
 
-    override method puntos() {
-        return 500
+    method danarSiEstaObjetivo() {
+        if (posiciones.any({ pos => pos == objetivo.position() })) {
+            objetivo.recibirAtaque(1)
+        }
     }
 
-    override method intervalo() {
-        return 900
+    method apagar() {
+        fuegos.forEach({ fuego => fuego.quitarDelTablero() })
+        fuegos.clear()
+    }
+}
+
+class Jefe inherits EnemigoADistancia {
+    var modo = activoJefe
+    var yaSeRegenero = false
+
+    override method nombreImagen() = "jefe"
+    override method sufijoImagen() = modo.sufijoImagen(self)
+    override method sufijoOrientacion() = direccionActual.sufijoEspalda()
+    override method vida() = 10
+    override method puntos() = 500
+    override method intervalo() = 850
+
+    override method actuarEnTurno() {
+        modo.actuar(self)
     }
 
-    override method moverse() {
-        if (estado.puedeMover()) {
-            turnos += 1
-            if (self.tocaAtaqueEnArea()) {
-                self.atacarEnArea()
-            } else {
-                super()
+    override method recibirAtaque(danio) {
+        if (modo.puedeRecibirDanio()) {
+            super(danio)
+            if (not self.estaVencido() and not yaSeRegenero and danioRecibido >= self.vida() / 2) {
+                self.iniciarRegeneracion()
             }
         }
     }
 
-    method tocaAtaqueEnArea() {
-        return turnos % 3 == 0
+    method programarSiSigueVivo(tiempo, accion) {
+        game.schedule(tiempo, {
+            if (game.hasVisual(self)) {
+                accion.apply()
+            }
+        })
     }
 
-    method atacarEnArea() {
-        const vecinas = self.posicionesVecinasValidas()
-        vecinas.forEach({ pos => self.golpearEn(pos) })
+    method iniciarRegeneracion() {
+        yaSeRegenero = true
+        modo = regenerandoJefe
+        self.programarSiSigueVivo(3000, {
+            danioRecibido = (danioRecibido - 4).max(0)
+            modo = activoJefe
+        })
     }
 
-    method posicionesVecinasValidas() {
-        const vecinas = tablero.direcciones().map({ dir => dir.posicionAlLado(position) })
-        return vecinas.filter({ pos => tablero.dentro(pos) })
+    method ejecutarTurno() {
+        direccionActual = tablero.direccionHacia(position, objetivo.position())
+        if (self.objetivoCerca()) {
+            self.iniciarAtaqueEnArea()
+        } else if (self.puedeDispararDesde(position)) {
+            self.iniciarLanzamientoTridente()
+        } else {
+            self.desplazarse()
+        }
     }
 
-    method golpearEn(pos) {
-        const golpe = new GolpeJefe(position = pos)
-        game.addVisual(golpe)
-        golpe.activar()
+    method objetivoCerca() = tablero.distancia(position, objetivo.position()) <= 4
+
+    override method puedeDispararDesde(origen) {
+        return tablero.estanAlineados(origen, objetivo.position())
+            and tablero.caminoDespejado(origen, objetivo.position())
     }
 
-    override method direccionElegida() {
-        const libres = tablero.direccionesLibres(position)
-        return libres.min({ dir => tablero.distancia(dir.posicionAlLado(position), objetivo.position()) })
+    method iniciarLanzamientoTridente() {
+        modo = preparandoTridenteJefe
+        self.programarSiSigueVivo(180, { modo.siguienteFase(self) })
+    }
+
+    method dispararTridente() {
+        modo = tridenteDisparadoJefe
+        const posInicial = direccionActual.posicionAlLado(position)
+        if (tablero.dentro(posInicial)) {
+            new TridenteArrojado(position = posInicial, direccion = direccionActual).lanzar()
+        }
+        self.programarSiSigueVivo(350, { modo.terminarAccion(self) })
+    }
+
+    method iniciarAtaqueEnArea() {
+        modo = atacandoArea1Jefe
+        self.programarSiSigueVivo(220, { modo.siguienteFase(self) })
+    }
+
+    method invocarFuego() {
+        modo = atacandoArea2Jefe
+        new OleadaDeFuego(
+            posiciones = self.posicionesDeFuego(),
+            objetivo = objetivo
+        ).iniciar()
+        self.programarSiSigueVivo(450, { modo.terminarAccion(self) })
+    }
+
+    method posicionesDeFuego() {
+        const offsets = [-2, -1, 0, 1, 2]
+        const candidatas = offsets.flatMap({ dx =>
+            offsets.map({ dy => game.at(position.x() + dx, position.y() + dy) })
+        })
+        return candidatas.filter({ pos =>
+            tablero.distancia(position, pos).between(1, 4)
+            and tablero.dentro(pos)
+            and (tablero.esAtravesable(pos) or pos == objetivo.position())
+        })
+    }
+
+    method volverAActivo() {
+        modo = activoJefe
     }
 
     override method morir() {
@@ -430,19 +489,42 @@ class Jefe inherits Enemigo {
     }
 }
 
-class GolpeJefe inherits ElementoEscenario {
-    method image() {
-        return "place_holder_amarillo.png"
-    }
+class ModoJefe {
+    method forma()
+    method sufijoImagen(jefe) = self.forma() + jefe.sufijoOrientacion()
+    method puedeRecibirDanio() = true
+    method actuar(jefe) {}
+    method siguienteFase(jefe) {}
+    method terminarAccion(jefe) {}
+}
 
-    method activar() {
-        if (link.position() == position) {
-            link.recibirAtaque(1)
-        }
-        game.schedule(300, {
-            if (game.hasVisual(self)) {
-                game.removeVisual(self)
-            }
-        })
-    }
+object activoJefe inherits ModoJefe {
+    override method forma() = "normal"
+    override method actuar(jefe) { jefe.ejecutarTurno() }
+}
+
+object preparandoTridenteJefe inherits ModoJefe {
+    override method forma() = "tridente"
+    override method siguienteFase(jefe) { jefe.dispararTridente() }
+}
+
+object tridenteDisparadoJefe inherits ModoJefe {
+    override method forma() = "tridente-disparado"
+    override method terminarAccion(jefe) { jefe.volverAActivo() }
+}
+
+object atacandoArea1Jefe inherits ModoJefe {
+    override method forma() = "ataque-area-1"
+    override method siguienteFase(jefe) { jefe.invocarFuego() }
+}
+
+object atacandoArea2Jefe inherits ModoJefe {
+    override method forma() = "ataque-area-2"
+    override method terminarAccion(jefe) { jefe.volverAActivo() }
+}
+
+object regenerandoJefe inherits ModoJefe {
+    override method forma() = "regeneracion"
+    override method sufijoImagen(jefe) = self.forma()
+    override method puedeRecibirDanio() = false
 }

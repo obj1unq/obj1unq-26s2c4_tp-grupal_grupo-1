@@ -16,72 +16,111 @@ class ElementoEscenario {
     method interactuarCon(personaje) {}
     method alChocarCon(personaje) {}
 
+    method recibirExplosion(danio) {
+        self.recibirAtaque(danio)
+    }
+
     method soltarEn(posicion) {
         position = posicion
         game.addVisual(self)
         spawner.redibujarPersonajes()
     }
 
-    method recibirExplosion(danio) {
-        self.recibirAtaque(danio)
+    method quitarDelTablero() {
+        if (game.hasVisual(self)) {
+            game.removeVisual(self)
+        }
+    }
+
+    method otrosObjetosEn(pos) {
+        return game.getObjectsIn(pos).filter({ objeto => objeto != self })
     }
 }
 
-class Llave inherits ElementoEscenario {
+class ItemRecolectable inherits ElementoEscenario {
+    override method alChocarCon(personaje) {
+        self.aplicarA(personaje)
+        self.quitarDelTablero()
+    }
+
+    method aplicarA(personaje)
+}
+
+class Llave inherits ItemRecolectable {
     method image() = "llave.png"
 
-    override method alChocarCon(personaje) {
-        self.serAgarradaPor(personaje)
-    }
-
-    method serAgarradaPor(personaje) {
+    override method aplicarA(personaje) {
         personaje.agarrarLlave()
-        if (game.hasVisual(self)) {
-            game.removeVisual(self)
-        }
     }
 }
 
-class Corazon inherits ElementoEscenario {
+class Corazon inherits ItemRecolectable {
     method image() = "corazon.png"
 
-    override method alChocarCon(personaje) {
+    override method aplicarA(personaje) {
         personaje.curar(1)
-        if (game.hasVisual(self)) {
-            game.removeVisual(self)
-        }
     }
 }
 
-class RefillFlechas inherits ElementoEscenario {
+class RefillFlechas inherits ItemRecolectable {
     const cantidad = 5
 
     method image() = "flecha-derecha.png"
 
-    override method alChocarCon(personaje) {
+    override method aplicarA(personaje) {
         personaje.agregarFlechas(cantidad)
-        if (game.hasVisual(self)) {
-            game.removeVisual(self)
-        }
+    }
+}
+
+class Bomba inherits ItemRecolectable {
+    method image() = "bomba.png"
+
+    override method aplicarA(personaje) {
+        personaje.agarrarBomba()
+    }
+}
+
+class Pocion inherits ItemRecolectable {
+    method image() = "pocion.png"
+
+    override method aplicarA(personaje) {
+        personaje.agarrarPocion()
     }
 }
 
 class Vasija inherits ElementoEscenario {
-    var property estado = sana
+    var property estado = vasijaSana
     var property recompensa = sinRecompensa
 
     method image() = "vasija-" + estado.forma() + ".png"
+    override method esAtravesable() = estado.esAtravesable()
 
     override method recibirAtaque(danio) {
-        if (estado == sana) {
-            estado = rota
-            recompensa.soltarEn(position)
-            recompensa = sinRecompensa
-            spawner.redibujarPersonajes()
-        }
+        estado.alRecibirAtaque(self)
     }
 
-    override method esAtravesable() = estado.puedeMover()
+    method romperse() {
+        estado = vasijaRota
+        recompensa.soltarEn(position)
+        recompensa = sinRecompensa
+        spawner.redibujarPersonajes()
+    }
+}
+
+object vasijaSana {
+    method forma() = "sana"
+    method esAtravesable() = false
+
+    method alRecibirAtaque(vasija) {
+        vasija.romperse()
+    }
+}
+
+object vasijaRota {
+    method forma() = "rota"
+    method esAtravesable() = true
+
+    method alRecibirAtaque(vasija) {}
 }
 
 class Cofre inherits ElementoEscenario {
@@ -89,7 +128,6 @@ class Cofre inherits ElementoEscenario {
     var property recompensa = sinRecompensa
 
     method image() = if (abierto) "cofre-abierto.png" else "cofre-cerrado.png"
-
     override method esAtravesable() = abierto
 
     override method interactuarCon(personaje) {
@@ -111,31 +149,48 @@ class Pared inherits ElementoEscenario {
     override method esAtravesable() = false
 }
 
-class PuertaConCandado inherits ElementoEscenario {
+class Salida inherits ElementoEscenario {
     const orientacion = arriba
-    var estado = puertaCerrada
     const juego = partida
 
-    method image() = "puerta-" + estado.forma() + "-" + orientacion.texto() + ".png"
+    method estaAbierta()
+    method imagenCerrada()
 
-    override method esAtravesable() = estado.esAtravesable()
+    method image() {
+        return if (self.estaAbierta()) {
+            "puerta-abierta-" + orientacion.texto() + ".png"
+        } else {
+            self.imagenCerrada()
+        }
+    }
+
+    override method esAtravesable() = self.estaAbierta()
+
+    override method alChocarCon(personaje) {
+        if (self.estaAbierta()) {
+            self.cruzar()
+        }
+    }
+
+    method cruzar() {
+        juego.completarSala()
+    }
+}
+
+class PuertaConCandado inherits Salida {
+    var estado = puertaCerrada
+
+    override method estaAbierta() = estado.esAtravesable()
+    override method imagenCerrada() = "puerta-cerrada-" + orientacion.texto() + ".png"
 
     override method interactuarCon(personaje) {
         estado.interactuar(self, personaje)
-    }
-
-    override method alChocarCon(personaje) {
-        estado.alChocar(self, personaje)
     }
 
     method abrirCon(personaje) {
         self.validarLlave(personaje)
         personaje.usarLlave()
         estado = puertaAbierta
-    }
-
-    method cruzar() {
-        juego.completarSala()
     }
 
     method validarLlave(personaje) {
@@ -146,60 +201,44 @@ class PuertaConCandado inherits ElementoEscenario {
 }
 
 object puertaCerrada {
-    method forma() = "cerrada"
     method esAtravesable() = false
 
     method interactuar(puerta, personaje) {
         puerta.abrirCon(personaje)
     }
-
-    method alChocar(puerta, personaje) {}
 }
 
 object puertaAbierta {
-    method forma() = "abierta"
     method esAtravesable() = true
 
     method interactuar(puerta, personaje) {}
+}
 
-    method alChocar(puerta, personaje) {
-        puerta.cruzar()
+class ParedAgrietada inherits Salida {
+    var abierta = false
+
+    override method estaAbierta() = abierta
+    override method imagenCerrada() = "place_holder_cyan.png"
+
+    override method recibirExplosion(danio) {
+        abierta = true
     }
 }
 
-class Bomba inherits ElementoEscenario {
-    method image() = "place_holder_negro.png"
-
-    override method alChocarCon(personaje) {
-        personaje.agarrarBomba()
-        if (game.hasVisual(self)) {
-            game.removeVisual(self)
-        }
-    }
-}
-
-class Pocion inherits ElementoEscenario {
-    method image() = "place_holder_verde.png"
-
-    override method alChocarCon(personaje) {
-        personaje.agarrarPocion()
-        if (game.hasVisual(self)) {
-            game.removeVisual(self)
-        }
-    }
+class PuertaPorEnemigos inherits Salida {
+    override method estaAbierta() = not spawner.hayEnemigos()
+    override method imagenCerrada() = "place_holder_cyan.png"
 }
 
 class BombaActiva inherits ElementoEscenario {
-    method image() = "place_holder_negro.png"
+    method image() = "bomba.png"
 
     method activar() {
         game.schedule(1500, { self.explotar() })
     }
 
     method explotar() {
-        if (game.hasVisual(self)) {
-            game.removeVisual(self)
-        }
+        self.quitarDelTablero()
         self.posicionesAfectadas().forEach({ pos => self.detonarEn(pos) })
     }
 
@@ -220,71 +259,7 @@ class Explosion inherits ElementoEscenario {
     method image() = "place_holder_amarillo.png"
 
     method activar() {
-        game.getObjectsIn(position).forEach({ objeto =>
-            if (objeto != self) {
-                objeto.recibirExplosion(3)
-            }
-        })
-        game.schedule(300, {
-            if (game.hasVisual(self)) {
-                game.removeVisual(self)
-            }
-        })
+        self.otrosObjetosEn(position).forEach({ objeto => objeto.recibirExplosion(3) })
+        game.schedule(300, { self.quitarDelTablero() })
     }
 }
-class ParedAgrietada inherits ElementoEscenario {
-    var estado = puertaCerrada
-    const juego = partida
-
-    method image() {
-        return if (estado.esAtravesable()) "puerta-abierta-arriba.png" else "place_holder_cyan.png"
-    }
-
-    override method esAtravesable() {
-        return estado.esAtravesable()
-    }
-
-    override method recibirAtaque(danio) {}
-
-    override method recibirExplosion(danio) {
-        estado = puertaAbierta
-    }
-
-    override method alChocarCon(personaje) {
-        estado.alChocar(self, personaje)
-    }
-
-    method cruzar() {
-        juego.completarSala()
-    }
-}
-
-class PuertaPorEnemigos inherits ElementoEscenario {
-    const orientacion = derecha
-    const juego = partida
-
-    method image() {
-        if (self.estaAbierta()) {
-            return "puerta-abierta-" + orientacion.texto() + ".png"
-        } else {
-            return "place_holder_cyan.png"
-        }
-    }
-
-    method estaAbierta() {
-        return !spawner.hayEnemigos()
-    }
-
-    override method esAtravesable() {
-        return self.estaAbierta()
-    }
-
-    override method alChocarCon(personaje) {
-        if (self.estaAbierta()) {
-            juego.completarSala()
-        }
-    }
-}
-
-const rota = new Estado(forma = "rota", puedeMover = true)
-const sana = new Estado(forma = "sana", puedeMover = false)
