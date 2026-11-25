@@ -390,6 +390,7 @@ class Proyectil inherits ElementoEscenario {
     method efectoAlImpactar() {
         self.quitarDelTablero()
     }
+
 }
 
 class Flecha inherits Proyectil {
@@ -403,7 +404,7 @@ class Flecha inherits Proyectil {
     }
 
     override method efectoAlImpactar() {
-        self.desaparecer()
+        self.quitarDelTablero()
     }
 }
 
