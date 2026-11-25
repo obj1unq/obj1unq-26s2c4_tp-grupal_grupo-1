@@ -1,4 +1,4 @@
-# La mazmorra de Link
+# The objects of Zelda: a reference to the past.
 _(Git Grupal: https://docs.google.com/presentation/d/1-o5zEUfuUT72ea8q2rk8mwHSqMkdJvTyQ9Y8eqUTVZA/edit?usp=sharing)_
 
 ## Equipo de desarrollo
@@ -8,11 +8,8 @@ _(Git Grupal: https://docs.google.com/presentation/d/1-o5zEUfuUT72ea8q2rk8mwHSqM
 
 ## Capturas
 
-_(agregar capturas del juego)_
-
-## Gameplay
-
-_(video corto del juego andando)_
+![alt text](image.png)
+![alt text](image-1.png)
 
 ## Reglas de Juego / Instrucciones
 
@@ -31,6 +28,8 @@ _(video corto del juego andando)_
 - `3` / `4`: seleccionar ítem (`3`: bomba, `4`: poción).
 - `B`: usar el ítem seleccionado.
 - `E`: interactuar (abrir puertas con candado y cofres).
+- `O`: Bajar volumen.
+- `P`: Subir volumen.
 
 **Armas**
 - **Espada:** ataque cuerpo a cuerpo a la celda de adelante (1 de daño).
