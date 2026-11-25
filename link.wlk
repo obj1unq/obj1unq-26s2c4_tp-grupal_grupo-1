@@ -20,6 +20,9 @@ class Personaje {
 
     method esAtravesable() = false
     method detieneProyectil() = true
+    method puedeDispararArco() = true
+    method consumirFlecha() {}
+    method agregarFlechas(cantidad) {}
 
     method usarArma() {
         if (estado.puedeMover()) {
@@ -31,10 +34,12 @@ class Personaje {
     method alChocarCon(personaje) {}
     method recibirExplosion(danio) {}
 }
+
 object link inherits Personaje(position = game.at(0, 1)) {
     var tieneLlave = false
     var corazones = 3
     var invulnerable = false
+    var flechas = 10
     var bombas = 0
     var pociones = 0
     var itemSeleccionado = itemBomba
@@ -42,21 +47,24 @@ object link inherits Personaje(position = game.at(0, 1)) {
     const juego = partida
 
     override method nombreImagen() = "link"
-    override method estadoNormal() = armaEquipada.estadoNormal()
-    override method estadoPreparando() = armaEquipada.estadoPreparando()
-    override method estadoDisparando() = armaEquipada.estadoDisparando()
 
-    method bombas() {
-        return bombas
+    method flechas() = flechas
+    method tieneFlechas() = flechas > 0
+
+    override method puedeDispararArco() = self.tieneFlechas()
+
+    override method consumirFlecha() {
+        flechas = (flechas - 1).max(0)
     }
 
-    method pociones() {
-        return pociones
+    override method agregarFlechas(cantidad) {
+        flechas += cantidad
     }
 
-    method nombreItemSeleccionado() {
-        return itemSeleccionado.nombre()
-    }
+    method bombas() = bombas
+    method pociones() = pociones
+
+    method nombreItemSeleccionado() = itemSeleccionado.nombre()
 
     method agarrarBomba() {
         bombas += 1
@@ -182,9 +190,11 @@ object link inherits Personaje(position = game.at(0, 1)) {
         tieneLlave = false
         corazones = 3
         invulnerable = false
+        flechas = 10
         bombas = 0
         pociones = 0
         itemSeleccionado = itemBomba
+        arco.reiniciar()
     }
 }
 
@@ -263,6 +273,9 @@ class ArmaADistancia {
 }
 
 object arco inherits ArmaADistancia {
+    var puedeDisparar = true
+    const cooldownMs = 900
+
     override method nombre() = "Arco"
     override method alcance() = 8
     override method duracionAtaque() = 200
@@ -271,6 +284,22 @@ object arco inherits ArmaADistancia {
     override method estadoDisparando() = arcoDisparado
     override method crearProyectil(posicion, direccion) = new Flecha(position = posicion, direccion = direccion)
 
+    method puedeUsar(personaje) = puedeDisparar and personaje.puedeDispararArco()
+
+    override method usar(personaje) {
+        if (self.puedeUsar(personaje)) {
+            personaje.consumirFlecha()
+            self.iniciarCooldown()
+            personaje.estado(personaje.estadoPreparando())
+            self.ejecutarDisparo(personaje)
+        }
+    }
+
+    method iniciarCooldown() {
+        puedeDisparar = false
+        game.schedule(cooldownMs, { puedeDisparar = true })
+    }
+
     override method ejecutarDisparo(personaje) {
         game.schedule(150, {
             if (game.hasVisual(personaje)) {
@@ -278,6 +307,10 @@ object arco inherits ArmaADistancia {
                 game.schedule(self.duracionAtaque(), { personaje.estado(personaje.estadoNormal()) })
             }
         })
+    }
+
+    method reiniciar() {
+        puedeDisparar = true
     }
 }
 
@@ -301,7 +334,7 @@ class GolpeDeEspada {
                 objeto.recibirAtaque(danioGolpe)
             }
         })
-        game.schedule(150, {
+        game.schedule(80, {
             if (game.hasVisual(self)) {
                 game.removeVisual(self)
             }
@@ -309,7 +342,6 @@ class GolpeDeEspada {
     }
 
     method recibirExplosion(danio) {}
-
     method esAtravesable() = true
     method detieneProyectil() = false
     method recibirAtaque(danio) {}
@@ -332,6 +364,7 @@ class Proyectil {
     method detieneProyectil() = false
     method recibirAtaque(danio) {}
     method interactuarCon(personaje) {}
+    method recibirExplosion(danio) {}
 
     method nombreDelMovimiento() = "proyectil-" + self.identity().toString()
 
@@ -443,9 +476,7 @@ class BalaDeCanion inherits Proyectil {
 }
 
 object itemBomba {
-    method nombre() {
-        return "Bomba"
-    }
+    method nombre() = "Bomba"
 
     method usar(personaje) {
         personaje.usarBomba()
@@ -453,9 +484,7 @@ object itemBomba {
 }
 
 object itemPocion {
-    method nombre() {
-        return "Pocion"
-    }
+    method nombre() = "Pocion"
 
     method usar(personaje) {
         personaje.usarPocion()

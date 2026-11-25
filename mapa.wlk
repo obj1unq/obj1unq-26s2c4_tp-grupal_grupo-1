@@ -215,7 +215,7 @@ object fabricanteVasija {
     }
 
     method recompensaAlAzar() {
-        return [sinRecompensa, sinRecompensa, new Corazon(), new Bomba(), new Pocion()].anyOne()
+        return [sinRecompensa, sinRecompensa, new Corazon(), new Bomba(), new Pocion(), new RefillFlechas()].anyOne()
     }
 }
 
@@ -227,7 +227,7 @@ object fabricanteSoldado {
     }
 
     method recompensaAlAzar() {
-        return [sinRecompensa, new Corazon()].anyOne()
+        return [sinRecompensa, new Corazon(), new RefillFlechas()].anyOne()
     }
 }
 
@@ -239,7 +239,7 @@ object fabricanteArquero {
     }
 
     method recompensaAlAzar() {
-        return [sinRecompensa, new Corazon()].anyOne()
+        return [sinRecompensa, new Corazon(), new RefillFlechas()].anyOne()
     }
 }
 
@@ -251,7 +251,7 @@ object fabricanteCanionero {
     }
 
     method recompensaAlAzar() {
-        return [sinRecompensa, new Corazon()].anyOne()
+        return [sinRecompensa, new Corazon(), new RefillFlechas()].anyOne()
     }
 }
 
@@ -270,7 +270,13 @@ object hud {
     method position() = game.at(10, 14)
 
     method text() {
-        return "HP:" + jugador.corazones().toString() + " Llave:" + self.textoLlave() + " B:" + jugador.bombas().toString() + " P:" + jugador.pociones().toString() + " [" + jugador.nombreItemSeleccionado() + "] Pts:" + registro.puntaje().toString()
+        return "HP:" + jugador.corazones().toString()
+            + " Flechas:" + jugador.flechas().toString()
+            + " Llave:" + self.textoLlave()
+            + " B:" + jugador.bombas().toString()
+            + " P:" + jugador.pociones().toString()
+            + " [" + jugador.nombreItemSeleccionado() + "]"
+            + " Pts:" + registro.puntaje().toString()
     }
 
     method textoLlave() = if (jugador.tieneLlave()) "sí" else "no"

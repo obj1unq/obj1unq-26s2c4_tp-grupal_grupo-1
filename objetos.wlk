@@ -21,6 +21,7 @@ class ElementoEscenario {
         game.addVisual(self)
         spawner.redibujarPersonajes()
     }
+
     method recibirExplosion(danio) {
         self.recibirAtaque(danio)
     }
@@ -46,6 +47,19 @@ class Corazon inherits ElementoEscenario {
 
     override method alChocarCon(personaje) {
         personaje.curar(1)
+        if (game.hasVisual(self)) {
+            game.removeVisual(self)
+        }
+    }
+}
+
+class RefillFlechas inherits ElementoEscenario {
+    const cantidad = 5
+
+    method image() = "flecha-derecha.png"
+
+    override method alChocarCon(personaje) {
+        personaje.agregarFlechas(cantidad)
         if (game.hasVisual(self)) {
             game.removeVisual(self)
         }
@@ -154,9 +168,7 @@ object puertaAbierta {
 }
 
 class Bomba inherits ElementoEscenario {
-    method image() {
-        return "place_holder_negro.png"
-    }
+    method image() = "place_holder_negro.png"
 
     override method alChocarCon(personaje) {
         personaje.agarrarBomba()
@@ -167,9 +179,7 @@ class Bomba inherits ElementoEscenario {
 }
 
 class Pocion inherits ElementoEscenario {
-    method image() {
-        return "place_holder_verde.png"
-    }
+    method image() = "place_holder_verde.png"
 
     override method alChocarCon(personaje) {
         personaje.agarrarPocion()
@@ -180,9 +190,7 @@ class Pocion inherits ElementoEscenario {
 }
 
 class BombaActiva inherits ElementoEscenario {
-    method image() {
-        return "place_holder_negro.png"
-    }
+    method image() = "place_holder_negro.png"
 
     method activar() {
         game.schedule(1500, { self.explotar() })
@@ -209,9 +217,7 @@ class BombaActiva inherits ElementoEscenario {
 }
 
 class Explosion inherits ElementoEscenario {
-    method image() {
-        return "place_holder_amarillo.png"
-    }
+    method image() = "place_holder_amarillo.png"
 
     method activar() {
         game.getObjectsIn(position).forEach({ objeto =>
