@@ -8,7 +8,7 @@ _(Git Grupal: https://docs.google.com/presentation/d/1-o5zEUfuUT72ea8q2rk8mwHSqM
 
 ## Capturas
 
-![alt text](image.png)
+![alt text](image-2.png)
 ![alt text](image-1.png)
 
 ## Reglas de Juego / Instrucciones
