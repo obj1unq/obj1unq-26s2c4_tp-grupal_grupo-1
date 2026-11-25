@@ -23,6 +23,7 @@ class Personaje {
     }
 
     method interactuarCon(personaje) {}
+    method alChocarCon(personaje) {}
 }
 
 object link inherits Personaje(position = game.at(0, 1)) {
@@ -41,15 +42,26 @@ object link inherits Personaje(position = game.at(0, 1)) {
         direccionActual = direccion
         if (estado.puedeMover()) {
             const posicionAnterior = position
-            self.interactuarConObjetosEn(direccion.posicionAlLado(position))
-            if (position == posicionAnterior) {
+            self.chocarConObjetosEn(direccion.posicionAlLado(position))
+            if (position == posicionAnterior and not self.sinCorazones()) {
                 position = direccion.siguiente(position)
             }
         }
     }
 
-    method interactuarConObjetosEn(destino) {
-        game.getObjectsIn(destino).forEach({ objeto => objeto.interactuarCon(self) })
+    method chocarConObjetosEn(destino) {
+        if (tablero.dentro(destino)) {
+            game.getObjectsIn(destino).forEach({ objeto => objeto.alChocarCon(self) })
+        }
+    }
+
+    method interactuar() {
+        if (estado.puedeMover()) {
+            const destino = direccionActual.posicionAlLado(position)
+            if (tablero.dentro(destino)) {
+                game.getObjectsIn(destino).forEach({ objeto => objeto.interactuarCon(self) })
+            }
+        }
     }
 
     method agarrarLlave() {
@@ -147,4 +159,5 @@ class GolpeDeEspada {
     method esAtravesable() = true
     method recibirAtaque(danio) {}
     method interactuarCon(personaje) {}
+    method alChocarCon(personaje) {}
 }

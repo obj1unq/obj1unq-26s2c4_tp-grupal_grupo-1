@@ -70,6 +70,18 @@ object tablero {
         const dy = pos1.y() - pos2.y()
         return (dx * dx) + (dy * dy)
     }
+
+    method orientacionBorde(position) {
+        return if (position.x() == 0) {
+            izquierda
+        } else if (position.x() == game.width() - 1) {
+            derecha
+        } else if (position.y() == 0) {
+            abajo
+        } else {
+            arriba
+        }
+    }
 }
 
 class Direccion {
@@ -106,3 +118,4 @@ object izquierda inherits Direccion {
     override method texto() = "izquierda"
     override method posicionAlLado(position) = position.left(1)
 }
+

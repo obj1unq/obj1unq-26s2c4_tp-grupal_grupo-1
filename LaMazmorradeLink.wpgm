@@ -5,8 +5,7 @@ program LinkGame {
     game.title("La Mazmorra de Link")
     game.height(15)
     game.width(20)
-    game.boardGround("fondo.png")
-
+    game.ground("piso.png")
     partida.iniciar()
 
     game.start()
