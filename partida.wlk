@@ -23,6 +23,7 @@ object partida {
 
     method iniciar() {
         indiceSalaActual = 0
+        sonido.iniciarMusica()
         nivel.cargarSala(salas.get(indiceSalaActual))
     }
 
@@ -38,11 +39,13 @@ object partida {
     }
 
     method ganar() {
+        sonido.detenerMusica()
         sonido.victoria()
         self.terminar("¡GANASTE!")
     }
 
     method perder() {
+        sonido.detenerMusica()
         sonido.gameOver()
         self.terminar("GAME OVER")
     }

@@ -1,4 +1,22 @@
 object sonido {
+
+var musicaFondo = null
+
+    method iniciarMusica() {
+        self.detenerMusica()
+        musicaFondo = game.sound("loop.mp3") 
+        musicaFondo.shouldLoop(true)
+        musicaFondo.volume(0.3)
+        musicaFondo.play()
+    }
+
+    method detenerMusica() {
+        if (musicaFondo != null) {
+            musicaFondo.stop()
+            musicaFondo = null
+        }
+    }
+
     method reproducir(archivo) {
         game.sound(archivo).play()
     }
