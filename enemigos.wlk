@@ -38,6 +38,9 @@ class Enemigo inherits Personaje {
             self.morir()
         }
     }
+    override method recibirExplosion(danio) {
+        self.recibirAtaque(danio)
+    }
 
     method estaVencido() = danioRecibido >= self.vida()
 
@@ -85,7 +88,7 @@ class Soldado inherits Enemigo {
     override method nombreImagen() = "soldado"
     override method vida() = 2
     override method puntos() = 100
-    override method intervalo() = 800
+    override method intervalo() = 700
 
     override method direccionElegida() {
         return tablero.direccionesLibres(position).min({ dir =>
@@ -97,7 +100,7 @@ class Soldado inherits Enemigo {
 class Murcielago inherits Enemigo {
     var modo = standbyMurcielago
     var frameActual = 1
-    const rangoActivacion = 5
+    const rangoActivacion = 3
 
     override method nombreImagen() = "murcielago"
     override method image() = self.nombreImagen() + "-" + modo.sufijoImagen(self) + ".png"

@@ -1,5 +1,6 @@
 import direcciones.*
 import partida.*
+import objetos.*
 
 class Personaje {
     var property position = game.at(0, 0)
@@ -24,15 +25,79 @@ class Personaje {
 
     method interactuarCon(personaje) {}
     method alChocarCon(personaje) {}
+    method recibirExplosion(danio) {}
 }
 
 object link inherits Personaje(position = game.at(0, 1)) {
     var tieneLlave = false
     var corazones = 3
     var invulnerable = false
+    var bombas = 0
+    var pociones = 0
+    var itemSeleccionado = itemBomba
+
     const juego = partida
 
     override method nombreImagen() = "link"
+
+    method bombas() {
+        return bombas
+    }
+
+    method pociones() {
+        return pociones
+    }
+
+    method nombreItemSeleccionado() {
+        return itemSeleccionado.nombre()
+    }
+
+    method agarrarBomba() {
+        bombas += 1
+    }
+
+    method agarrarPocion() {
+        pociones += 1
+    }
+
+    method seleccionarBomba() {
+        itemSeleccionado = itemBomba
+    }
+
+    method seleccionarPocion() {
+        itemSeleccionado = itemPocion
+    }
+
+    method usarItemSeleccionado() {
+        if (estado.puedeMover()) {
+            itemSeleccionado.usar(self)
+        }
+    }
+
+    method usarBomba() {
+        if (bombas > 0) {
+            bombas -= 1
+            self.colocarBomba()
+        }
+    }
+
+    method colocarBomba() {
+        const bomba = new BombaActiva(position = position)
+        game.addVisual(bomba)
+        bomba.activar()
+    }
+
+    method usarPocion() {
+        if (pociones > 0) {
+            pociones -= 1
+            self.activarInvulnerabilidad(5000)
+        }
+    }
+
+    method activarInvulnerabilidad(duracion) {
+        invulnerable = true
+        game.schedule(duracion, { self.volverAVulnerable() })
+    }
 
     method tieneLlave() = tieneLlave
     method corazones() = corazones
@@ -104,6 +169,9 @@ object link inherits Personaje(position = game.at(0, 1)) {
         tieneLlave = false
         corazones = 3
         invulnerable = false
+        bombas = 0
+        pociones = 0
+        itemSeleccionado = itemBomba
     }
 }
 
@@ -156,8 +224,30 @@ class GolpeDeEspada {
         })
     }
 
+    method recibirExplosion(danio) {}
+
     method esAtravesable() = true
     method recibirAtaque(danio) {}
     method interactuarCon(personaje) {}
     method alChocarCon(personaje) {}
+}
+
+object itemBomba {
+    method nombre() {
+        return "Bomba"
+    }
+
+    method usar(personaje) {
+        personaje.usarBomba()
+    }
+}
+
+object itemPocion {
+    method nombre() {
+        return "Pocion"
+    }
+
+    method usar(personaje) {
+        personaje.usarPocion()
+    }
 }
