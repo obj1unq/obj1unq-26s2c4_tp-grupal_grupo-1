@@ -42,7 +42,7 @@ object partida {
     method iniciar() {
         registro.reiniciar()
         link.reiniciar()
-        indiceSalaActual = 0
+        indiceSalaActual = 3
         sonido.iniciarMusica()
         nivel.cargarSala(salas.get(indiceSalaActual))
     }
