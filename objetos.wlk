@@ -2,6 +2,7 @@ import direcciones.*
 import link.*
 import partida.*
 import mapa.*
+import sonido.*
 
 object sinRecompensa {
     method soltarEn(posicion) {}
@@ -39,6 +40,7 @@ class ElementoEscenario {
 
 class ItemRecolectable inherits ElementoEscenario {
     override method alChocarCon(personaje) {
+        sonido.item()
         self.aplicarA(personaje)
         self.quitarDelTablero()
     }
@@ -100,6 +102,7 @@ class Vasija inherits ElementoEscenario {
     }
 
     method romperse() {
+        sonido.vasija()
         estado = vasijaRota
         recompensa.soltarEn(position)
         recompensa = sinRecompensa
@@ -238,6 +241,7 @@ class BombaActiva inherits ElementoEscenario {
     }
 
     method explotar() {
+        sonido.explosion()
         self.quitarDelTablero()
         self.posicionesAfectadas().forEach({ pos => self.detonarEn(pos) })
     }

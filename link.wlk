@@ -2,6 +2,7 @@ import direcciones.*
 import partida.*
 import mapa.*
 import objetos.*
+import sonido.*
 
 class Personaje inherits ElementoEscenario {
     var property estado = normal
@@ -148,6 +149,7 @@ object link inherits Personaje(position = game.at(0, 1)) {
     }
 
     method perderCorazones(danio) {
+        sonido.danio()
         corazones = (corazones - danio).max(0)
         self.activarInvulnerabilidad(1000)
         if (self.sinCorazones()) {
@@ -205,6 +207,7 @@ object espada inherits Arma {
     override method estaEnRango(origen, destino) = tablero.estaAlLado(origen, destino)
 
     override method usar(personaje) {
+        sonido.espada()
         personaje.estado(self.estadoDisparando())
         const posObjetivo = personaje.direccionActual().posicionAlLado(personaje.position())
 
@@ -403,6 +406,7 @@ class BalaDeCanion inherits Proyectil {
     override method intervalo() = 250
 
     override method efectoAlImpactar() {
+        sonido.explosion()
         imagenActual = "bala-explosion.png"
         spawner.redibujar(self)
         game.schedule(180, { self.mostrarHumo() })
