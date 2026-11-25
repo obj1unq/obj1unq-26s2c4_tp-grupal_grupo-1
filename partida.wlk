@@ -17,8 +17,8 @@ object marcador {
 
 object partida {
     const registro = marcador
-    const salas = [sala1, sala2, sala3]
-    var indiceSalaActual = 0
+    const salas = [sala1, sala2, sala3, sala4]
+    var indiceSalaActual = 3 //CMABIAR SOLO LO PONGO PARA PROBAR LA SALA 4
 
     method iniciar() {
         indiceSalaActual = 0
