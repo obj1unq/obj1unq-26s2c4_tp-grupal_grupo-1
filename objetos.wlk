@@ -221,7 +221,7 @@ class ParedAgrietada inherits Salida {
     var abierta = false
 
     override method estaAbierta() = abierta
-    override method imagenCerrada() = "place_holder_cyan.png"
+    override method imagenCerrada() = "pared-agrietada-arriba.png"
 
     override method recibirExplosion(danio) {
         abierta = true
@@ -230,7 +230,7 @@ class ParedAgrietada inherits Salida {
 
 class PuertaPorEnemigos inherits Salida {
     override method estaAbierta() = not spawner.hayEnemigos()
-    override method imagenCerrada() = "place_holder_cyan.png"
+    override method imagenCerrada() = "pared-agrietada-arriba.png"
 }
 
 class BombaActiva inherits ElementoEscenario {
@@ -260,7 +260,7 @@ class BombaActiva inherits ElementoEscenario {
 }
 
 class Explosion inherits ElementoEscenario {
-    method image() = "place_holder_amarillo.png"
+    method image() = "bala-explosion.png"
 
     method activar() {
         self.otrosObjetosEn(position).forEach({ objeto => objeto.recibirExplosion(3) })
