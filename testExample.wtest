@@ -175,4 +175,32 @@ describe "tests de interactividad de objetos y enemigos" {
         assert.equals("murcielago-derrotado.png", murcielago.image())
         assert.that(murcielago.esAtravesable())
     }
+
+    test "link abre una puerta con candado al interactuar mirando hacia ella" {
+        link.position(game.at(18, 11))
+        link.direccionActual(derecha)
+        link.agarrarLlave()
+        const puerta = new PuertaConCandado(position = game.at(19, 11), orientacion = derecha)
+        game.addVisual(puerta)
+
+        link.interactuar()
+
+        assert.equals("puerta-abierta-derecha.png", puerta.image())
+        assert.that(puerta.esAtravesable())
+        assert.notThat(link.tieneLlave())
+        assert.equals(game.at(18, 11), link.position())
+    }
+
+    test "link abre un cofre al interactuar con el" {
+        link.position(game.at(5, 5))
+        link.direccionActual(arriba)
+        const cofre = new Cofre(position = game.at(5, 6), recompensa = new Llave())
+        game.addVisual(cofre)
+
+        link.interactuar()
+
+        assert.that(cofre.abierto())
+        assert.equals("cofre-abierto.png", cofre.image())
+        assert.that(cofre.esAtravesable())
+    }
 }

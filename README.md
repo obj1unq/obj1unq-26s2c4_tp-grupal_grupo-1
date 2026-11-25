@@ -29,6 +29,7 @@ _(video corto del juego nuestro cuando esté andando)_
 - `←` `→` `↑` `↓`: mover a Link.
 - `Z`: atacar con la espada a la celda de adelante.
 - `B`: usar el ítem seleccionado (bomba, poción).
+- `E`: interactuar (abrir puertas y cofres).
 - `1` / `2`: elegir ítem.
 
 **Enemigos**

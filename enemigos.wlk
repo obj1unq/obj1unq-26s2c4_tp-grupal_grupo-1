@@ -24,7 +24,7 @@ class Enemigo inherits Personaje {
 
     method nombreDelMovimiento() = "moverse-" + self.identity().toString()
 
-    override method interactuarCon(personaje) {
+    override method alChocarCon(personaje) {
         self.tocarA(personaje)
     }
 
@@ -112,8 +112,8 @@ class Murcielago inherits Enemigo {
         modo.actuar(self)
     }
 
-    override method interactuarCon(personaje) {
-        modo.interactuarCon(self, personaje)
+    override method alChocarCon(personaje) {
+        modo.alChocarCon(self, personaje)
     }
 
     override method recibirAtaque(danio) {
@@ -122,9 +122,6 @@ class Murcielago inherits Enemigo {
         }
     }
 
-    override method atacar() {
-        self.tocarA(objetivo)
-    }
 
     override method direccionElegida() {
         return self.direccionesDeVuelo().min({ dir =>
@@ -207,7 +204,7 @@ object standbyMurcielago {
         }
     }
 
-    method interactuarCon(murcielago, personaje) {
+    method alChocarCon(murcielago, personaje) {
         murcielago.despertar()
         murcielago.tocarA(personaje)
     }
@@ -222,7 +219,7 @@ object activoMurcielago {
         murcielago.perseguirOAtacar()
     }
 
-    method interactuarCon(murcielago, personaje) {
+    method alChocarCon(murcielago, personaje) {
         murcielago.tocarA(personaje)
     }
 }
@@ -233,5 +230,5 @@ object derrotadoMurcielago {
     method puedeRecibirDanio() = false
 
     method actuar(murcielago) {}
-    method interactuarCon(murcielago, personaje) {}
+    method alChocarCon(murcielago, personaje) {}
 }

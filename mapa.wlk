@@ -41,13 +41,17 @@ object v {
 
 object e {
     method construirEn(posicion) {
-        game.addVisual(new Pared(position = posicion, image = "puerta-entrada.png"))
+        const lado = tablero.orientacionBorde(posicion)
+        game.addVisual(new Pared(position = posicion, image = "puerta-entrada-" + lado.texto() + ".png"))
     }
 }
 
 object s {
     method construirEn(posicion) {
-        game.addVisual(new PuertaConCandado(position = posicion))
+        game.addVisual(new PuertaConCandado(
+            position = posicion,
+            orientacion = tablero.orientacionBorde(posicion)
+        ))
     }
 }
 
@@ -223,6 +227,7 @@ object hud {
     method esAtravesable() = false
     method recibirAtaque(danio) {}
     method interactuarCon(personaje) {}
+    method alChocarCon(personaje) {}
 }
 
 object nivel {
@@ -235,9 +240,10 @@ object nivel {
         keyboard.down().onPressDo({ jugador.mover(abajo) })
         keyboard.z().onPressDo({ jugador.usarArma() })
         keyboard.space().onPressDo({ jugador.usarArma() })
+        keyboard.e().onPressDo({ jugador.interactuar() })
     }
 
-method cargarSala(filas) {
+    method cargarSala(filas) {
         spawner.detenerEnemigos()
         game.clear()
         self.armar(filas)
