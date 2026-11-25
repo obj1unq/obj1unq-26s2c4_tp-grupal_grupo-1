@@ -285,3 +285,164 @@ object derrotadoMurcielago {
     method actuar(murcielago) {}
     method alChocarCon(murcielago, personaje) {}
 }
+
+class Estatua inherits ElementoEscenario {
+    const direccion = abajo
+
+    method initialize() {
+        self.iniciarDisparos()
+    }
+
+    method image() {
+        return "place_holder_rosa.png"
+    }
+
+    override method esAtravesable() {
+        return false
+    }
+
+    override method recibirExplosion(danio) {}
+
+    method iniciarDisparos() {
+        game.onTick(2500, self.nombreTick(), { self.disparar() })
+    }
+
+    method detener() {
+        game.removeTickEvent(self.nombreTick())
+    }
+
+    method nombreTick() {
+        return "estatua-" + self.identity().toString()
+    }
+
+    method disparar() {
+        const origen = direccion.posicionAlLado(position)
+        if (tablero.dentro(origen)) {
+            const proyectil = new Proyectil(position = origen, direccion = direccion)
+            spawner.registrarTrampa(proyectil)
+            game.addVisual(proyectil)
+        }
+    }
+}
+
+class Proyectil inherits ElementoEscenario {
+    const direccion
+
+    method initialize() {
+        game.onTick(250, self.nombreTick(), { self.avanzar() })
+    }
+
+    method image() {
+        return "place_holder_amarillo.png"
+    }
+
+    method nombreTick() {
+        return "proyectil-" + self.identity().toString()
+    }
+
+    method detener() {
+        game.removeTickEvent(self.nombreTick())
+    }
+
+    method avanzar() {
+        const siguiente = direccion.posicionAlLado(position)
+        if (siguiente == link.position()) {
+            link.recibirAtaque(1)
+            self.destruir()
+        } else if (tablero.puedeIr(siguiente)) {
+            position = siguiente
+        } else {
+            self.destruir()
+        }
+    }
+
+    method destruir() {
+        self.detener()
+        spawner.quitarTrampa(self)
+        if (game.hasVisual(self)) {
+            game.removeVisual(self)
+        }
+    }
+}
+
+class Jefe inherits Enemigo {
+    var turnos = 0
+
+    override method nombreImagen() {
+        return "jefe"
+    }
+
+    override method image() {
+        return "place_holder_rosa.png"
+    }
+
+    override method vida() {
+        return 6
+    }
+
+    override method puntos() {
+        return 500
+    }
+
+    override method intervalo() {
+        return 900
+    }
+
+    override method moverse() {
+        if (estado.puedeMover()) {
+            turnos += 1
+            if (self.tocaAtaqueEnArea()) {
+                self.atacarEnArea()
+            } else {
+                super()
+            }
+        }
+    }
+
+    method tocaAtaqueEnArea() {
+        return turnos % 3 == 0
+    }
+
+    method atacarEnArea() {
+        const vecinas = self.posicionesVecinasValidas()
+        vecinas.forEach({ pos => self.golpearEn(pos) })
+    }
+
+    method posicionesVecinasValidas() {
+        const vecinas = tablero.direcciones().map({ dir => dir.posicionAlLado(position) })
+        return vecinas.filter({ pos => tablero.dentro(pos) })
+    }
+
+    method golpearEn(pos) {
+        const golpe = new GolpeJefe(position = pos)
+        game.addVisual(golpe)
+        golpe.activar()
+    }
+
+    override method direccionElegida() {
+        const libres = tablero.direccionesLibres(position)
+        return libres.min({ dir => tablero.distancia(dir.posicionAlLado(position), objetivo.position()) })
+    }
+
+    override method morir() {
+        super()
+        partida.ganar()
+    }
+}
+
+class GolpeJefe inherits ElementoEscenario {
+    method image() {
+        return "place_holder_amarillo.png"
+    }
+
+    method activar() {
+        if (link.position() == position) {
+            link.recibirAtaque(1)
+        }
+        game.schedule(300, {
+            if (game.hasVisual(self)) {
+                game.removeVisual(self)
+            }
+        })
+    }
+}
