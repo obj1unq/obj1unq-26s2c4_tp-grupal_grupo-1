@@ -243,7 +243,7 @@ object nivel {
         keyboard.e().onPressDo({ jugador.interactuar() })
     }
 
-method cargarSala(filas) {
+    method cargarSala(filas) {
         spawner.detenerEnemigos()
         game.clear()
         self.armar(filas)

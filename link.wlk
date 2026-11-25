@@ -7,7 +7,7 @@ class Personaje {
     var property direccionActual = abajo
     var property armaEquipada = espada
 
-    // Template Method
+
     method image() {
         return self.nombreImagen() + "-" + estado.forma() + "-" + direccionActual.texto() + ".png"
     }

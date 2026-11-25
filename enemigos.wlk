@@ -122,9 +122,6 @@ class Murcielago inherits Enemigo {
         }
     }
 
-    override method atacar() {
-        self.tocarA(objetivo)
-    }
 
     override method direccionElegida() {
         return self.direccionesDeVuelo().min({ dir =>
