@@ -314,3 +314,85 @@ class Proyectil inherits ElementoEscenario {
         }
     }
 }
+
+class Jefe inherits Enemigo {
+    var turnos = 0
+
+    override method nombreImagen() {
+        return "jefe"
+    }
+
+    override method image() {
+        return "place_holder_rosa.png"
+    }
+
+    override method vida() {
+        return 6
+    }
+
+    override method puntos() {
+        return 500
+    }
+
+    override method intervalo() {
+        return 900
+    }
+
+    override method moverse() {
+        if (estado.puedeMover()) {
+            turnos += 1
+            if (self.tocaAtaqueEnArea()) {
+                self.atacarEnArea()
+            } else {
+                super()
+            }
+        }
+    }
+
+    method tocaAtaqueEnArea() {
+        return turnos % 3 == 0
+    }
+
+    method atacarEnArea() {
+        const vecinas = self.posicionesVecinasValidas()
+        vecinas.forEach({ pos => self.golpearEn(pos) })
+    }
+
+    method posicionesVecinasValidas() {
+        const vecinas = tablero.direcciones().map({ dir => dir.posicionAlLado(position) })
+        return vecinas.filter({ pos => tablero.dentro(pos) })
+    }
+
+    method golpearEn(pos) {
+        const golpe = new GolpeJefe(position = pos)
+        game.addVisual(golpe)
+        golpe.activar()
+    }
+
+    override method direccionElegida() {
+        const libres = tablero.direccionesLibres(position)
+        return libres.min({ dir => tablero.distancia(dir.posicionAlLado(position), objetivo.position()) })
+    }
+
+    override method morir() {
+        super()
+        partida.ganar()
+    }
+}
+
+class GolpeJefe inherits ElementoEscenario {
+    method image() {
+        return "place_holder_amarillo.png"
+    }
+
+    method activar() {
+        if (link.position() == position) {
+            link.recibirAtaque(1)
+        }
+        game.schedule(300, {
+            if (game.hasVisual(self)) {
+                game.removeVisual(self)
+            }
+        })
+    }
+}

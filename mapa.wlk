@@ -87,6 +87,12 @@ object t {
     }
 }
 
+object b {
+    method construirEn(posicion) {
+        spawner.spawnearEn(fabricanteJefe, posicion)
+    }
+}
+
 const sala1 = [
     [p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p],
     [p, l, o, p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
@@ -133,6 +139,23 @@ const sala3 = [
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, p, p, o, o, o, o, o, o, p, p, o, o, o, o, p],
     [p, o, o, o, o, p, p, o, o, o, o, o, o, p, p, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, j, o, o, o, o, o, o, o, o, o, p],
+    [p, p, p, p, p, p, p, p, p, e, p, p, p, p, p, p, p, p, p, p]
+]
+
+const sala4 = [
+    [p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, b, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, p, p, o, o, o, o, o, o, o, o, o, o, p, p, o, o, p],
+    [p, o, o, p, p, o, o, o, o, o, o, o, o, o, o, p, p, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, p, p, o, o, o, o, o, o, o, o, o, o, p, p, o, o, p],
+    [p, o, o, p, p, o, o, o, o, o, o, o, o, o, o, p, p, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, o, j, o, o, o, o, o, o, o, o, o, p],
     [p, p, p, p, p, p, p, p, p, e, p, p, p, p, p, p, p, p, p, p]
@@ -249,6 +272,13 @@ object fabricanteMurcielago {
         const murcielago = new Murcielago(position = position)
         spawner.registrarEnemigo(murcielago)
         return murcielago
+    }
+}
+object fabricanteJefe {
+    method crear(position) {
+        const jefe = new Jefe(position = position)
+        spawner.registrarEnemigo(jefe)
+        return jefe
     }
 }
 
