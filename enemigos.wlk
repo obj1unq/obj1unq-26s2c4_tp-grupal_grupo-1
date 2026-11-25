@@ -235,3 +235,82 @@ object derrotadoMurcielago {
     method actuar(murcielago) {}
     method alChocarCon(murcielago, personaje) {}
 }
+
+class Estatua inherits ElementoEscenario {
+    const direccion = abajo
+
+    method initialize() {
+        self.iniciarDisparos()
+    }
+
+    method image() {
+        return "place_holder_rosa.png"
+    }
+
+    override method esAtravesable() {
+        return false
+    }
+
+    override method recibirExplosion(danio) {}
+
+    method iniciarDisparos() {
+        game.onTick(2500, self.nombreTick(), { self.disparar() })
+    }
+
+    method detener() {
+        game.removeTickEvent(self.nombreTick())
+    }
+
+    method nombreTick() {
+        return "estatua-" + self.identity().toString()
+    }
+
+    method disparar() {
+        const origen = direccion.posicionAlLado(position)
+        if (tablero.dentro(origen)) {
+            const proyectil = new Proyectil(position = origen, direccion = direccion)
+            spawner.registrarTrampa(proyectil)
+            game.addVisual(proyectil)
+        }
+    }
+}
+
+class Proyectil inherits ElementoEscenario {
+    const direccion
+
+    method initialize() {
+        game.onTick(250, self.nombreTick(), { self.avanzar() })
+    }
+
+    method image() {
+        return "place_holder_amarillo.png"
+    }
+
+    method nombreTick() {
+        return "proyectil-" + self.identity().toString()
+    }
+
+    method detener() {
+        game.removeTickEvent(self.nombreTick())
+    }
+
+    method avanzar() {
+        const siguiente = direccion.posicionAlLado(position)
+        if (siguiente == link.position()) {
+            link.recibirAtaque(1)
+            self.destruir()
+        } else if (tablero.puedeIr(siguiente)) {
+            position = siguiente
+        } else {
+            self.destruir()
+        }
+    }
+
+    method destruir() {
+        self.detener()
+        spawner.quitarTrampa(self)
+        if (game.hasVisual(self)) {
+            game.removeVisual(self)
+        }
+    }
+}
