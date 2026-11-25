@@ -3,6 +3,7 @@ import link.*
 import objetos.*
 import enemigos.*
 import partida.*
+import sonido.*
 
 object p {
     method construirEn(posicion) {
@@ -332,6 +333,8 @@ object nivel {
         keyboard.num3().onPressDo({ jugador.seleccionarBomba() })
         keyboard.num4().onPressDo({ jugador.seleccionarPocion() })
         keyboard.b().onPressDo({ jugador.usarItemSeleccionado() })
+        keyboard.o().onPressDo({ sonido.bajarVolumen() })
+        keyboard.p().onPressDo({ sonido.subirVolumen() })
     }
 
     method cargarSala(filas) {

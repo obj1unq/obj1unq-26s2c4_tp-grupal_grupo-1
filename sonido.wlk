@@ -1,12 +1,32 @@
 object sonido {
-
     var musicaFondo = null
+    var volumenGeneral = 0.5
+
+    method subirVolumen() {
+        volumenGeneral = (volumenGeneral + 0.1).min(1)
+        self.actualizarVolumenMusica()
+    }
+
+    method bajarVolumen() {
+        volumenGeneral = (volumenGeneral - 0.1).max(0)
+        self.actualizarVolumenMusica()
+    }
+
+    method volumenMusica() {
+        return volumenGeneral * 0.6
+    }
+
+    method actualizarVolumenMusica() {
+        if (musicaFondo != null) {
+            musicaFondo.volume(self.volumenMusica())
+        }
+    }
 
     method iniciarMusica() {
         self.detenerMusica()
         musicaFondo = game.sound("loop.mp3")
         musicaFondo.shouldLoop(true)
-        musicaFondo.volume(0.3)
+        musicaFondo.volume(self.volumenMusica())
         musicaFondo.play()
     }
 
@@ -18,7 +38,9 @@ object sonido {
     }
 
     method reproducir(archivo) {
-        game.sound(archivo).play()
+        const efecto = game.sound(archivo)
+        efecto.volume(volumenGeneral)
+        efecto.play()
     }
 
     method espada() {
