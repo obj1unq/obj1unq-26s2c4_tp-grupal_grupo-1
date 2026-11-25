@@ -244,4 +244,231 @@ describe "tests de interactividad de objetos y enemigos" {
         assert.equals(canion, canionero.armaEquipada())
         assert.equals(3, canionero.vida())
     }
+
+}
+
+describe "tests del jefe y sus ataques" {
+    method initialize() {
+        spawner.detenerEnemigos()
+        game.clear()
+        game.height(15)
+        game.width(20)
+        link.reiniciar()
+    }
+
+    test "el jefe no se activa si Link esta fuera de rango" {
+        link.position(game.at(9, 1))
+        const jefe = new Jefe(position = game.at(9, 10))
+        game.addVisual(link)
+        game.addVisual(jefe)
+
+        jefe.moverse()
+
+        assert.equals(game.at(9, 10), jefe.position())
+        assert.equals("jefe-normal.png", jefe.image())
+    }
+
+    test "el jefe se prepara para lanzar tridente cuando Link esta alineado en rango" {
+        link.position(game.at(9, 5))
+        const jefe = new Jefe(position = game.at(9, 10))
+        game.addVisual(link)
+        game.addVisual(jefe)
+
+        jefe.moverse()
+
+        assert.equals("jefe-tridente.png", jefe.image())
+    }
+
+    test "el jefe usa sprite de espalda cuando apunta hacia arriba" {
+        link.position(game.at(9, 10))
+        const jefe = new Jefe(position = game.at(9, 5))
+        game.addVisual(link)
+        game.addVisual(jefe)
+
+        jefe.moverse()
+
+        assert.equals("jefe-tridente-espalda.png", jefe.image())
+    }
+
+    test "el jefe inicia el ataque de fuego cuando Link esta cerca" {
+        link.position(game.at(9, 8))
+        const jefe = new Jefe(position = game.at(9, 10))
+        game.addVisual(link)
+        game.addVisual(jefe)
+
+        jefe.moverse()
+
+        assert.equals("jefe-ataque-area-1.png", jefe.image())
+    }
+
+    test "el jefe entra en regeneracion a mitad de vida y se vuelve invulnerable" {
+        const jefe = new Jefe(position = game.at(9, 10))
+        game.addVisual(jefe)
+
+        jefe.recibirAtaque(5)
+        assert.equals("jefe-regeneracion.png", jefe.image())
+
+        jefe.recibirAtaque(10)
+        assert.notThat(jefe.estaVencido())
+        assert.equals("jefe-regeneracion.png", jefe.image())
+    }
+
+    test "el tridente gira al avanzar y hace 2 de danio al impactar" {
+        link.position(game.at(8, 5))
+        game.addVisual(link)
+        const tridente = new TridenteArrojado(position = game.at(5, 5), direccion = derecha)
+
+        assert.equals("tridente-arriba.png", tridente.image())
+
+        tridente.lanzar()
+        tridente.avanzar()
+        assert.equals("tridente-derecha.png", tridente.image())
+
+        tridente.avanzar()
+        assert.equals("tridente-abajo.png", tridente.image())
+
+        tridente.avanzar()
+        assert.equals(1, link.corazones())
+    }
+
+    test "la oleada de fuego dania a Link si esta en el area afectada" {
+        link.position(game.at(9, 9))
+        game.addVisual(link)
+        const oleada = new OleadaDeFuego(
+            posiciones = [game.at(9, 9), game.at(9, 11)],
+            objetivo = link
+        )
+
+        oleada.iniciar()
+
+        assert.equals(2, link.corazones())
+    }
+}
+
+describe "tests de items, bombas y vida de link" {
+    method initialize() {
+        spawner.detenerEnemigos()
+        game.clear()
+        game.height(15)
+        game.width(20)
+        link.reiniciar()
+    }
+
+    test "una pared agrietada ignora ataques comunes pero se abre con una explosion" {
+        const pared = new ParedAgrietada(position = game.at(5, 6))
+        const bomba = new BombaActiva(position = game.at(5, 5))
+        game.addVisual(pared)
+        game.addVisual(bomba)
+
+        pared.recibirAtaque(1)
+        assert.notThat(pared.esAtravesable())
+
+        bomba.explotar()
+        assert.that(pared.esAtravesable())
+        assert.equals("puerta-abierta-arriba.png", pared.image())
+    }
+
+    test "link agarra y coloca una bomba consumiendola del inventario" {
+        const bomba = new Bomba(position = game.at(5, 5))
+        game.addVisual(bomba)
+        link.position(game.at(4, 5))
+
+        link.mover(derecha)
+        assert.equals(1, link.bombas())
+
+        link.seleccionarBomba()
+        link.usarItemSeleccionado()
+        assert.equals(0, link.bombas())
+    }
+
+    test "la pocion vuelve invulnerable a Link frente a ataques" {
+        link.agarrarPocion()
+        link.seleccionarPocion()
+        link.usarItemSeleccionado()
+
+        assert.equals(0, link.pociones())
+        assert.that(link.invulnerable())
+
+        link.recibirAtaque(2)
+        assert.equals(3, link.corazones())
+    }
+
+    test "link no supera el maximo de 5 corazones y queda invulnerable tras recibir danio" {
+        link.curar(10)
+        assert.equals(5, link.corazones())
+
+        link.recibirAtaque(1)
+        assert.equals(4, link.corazones())
+        assert.that(link.invulnerable())
+
+        link.recibirAtaque(2)
+        assert.equals(4, link.corazones())
+    }
+
+    test "el arco consume flechas, no dispara sin flechas y se recarga con refill" {
+        link.position(game.at(5, 5))
+        link.equipar(arco)
+        link.usarArma()
+        assert.equals(9, link.flechas())
+
+        (1 .. 9).forEach({ _ => link.consumirFlecha() })
+        assert.notThat(link.puedeDispararArco())
+
+        link.reiniciar()
+        (1 .. 10).forEach({ _ => link.consumirFlecha() })
+        link.equipar(arco)
+        link.usarArma()
+        assert.equals(arcoNormal, link.estado())
+
+        const refill = new RefillFlechas(position = game.at(6, 5))
+        game.addVisual(refill)
+        link.position(game.at(5, 5))
+        link.mover(derecha)
+        assert.equals(5, link.flechas())
+    }
+}
+
+describe "tests de puertas y puntaje" {
+    method initialize() {
+        spawner.detenerEnemigos()
+        game.clear()
+        game.height(15)
+        game.width(20)
+        link.reiniciar()
+    }
+
+    test "abrir puerta con candado sin llave lanza excepcion" {
+        link.position(game.at(18, 11))
+        link.direccionActual(derecha)
+        const puerta = new PuertaConCandado(position = game.at(19, 11), orientacion = derecha)
+        game.addVisual(puerta)
+
+        assert.throwsException({ link.interactuar() })
+        assert.notThat(puerta.esAtravesable())
+    }
+
+    test "la puerta por enemigos se abre al derrotar a todos los enemigos de la sala" {
+        const puerta = new PuertaPorEnemigos(position = game.at(19, 6), orientacion = derecha)
+        const soldado = fabricanteSoldado.crear(game.at(10, 6))
+        game.addVisual(puerta)
+        game.addVisual(soldado)
+
+        assert.notThat(puerta.esAtravesable())
+
+        soldado.recibirAtaque(2)
+
+        assert.that(puerta.esAtravesable())
+        assert.equals("puerta-abierta-derecha.png", puerta.image())
+    }
+
+    test "el marcador suma puntos por enemigos vencidos y salas completadas" {
+        const puntajeInicial = marcador.puntaje()
+        const soldado = fabricanteSoldado.crear(game.at(10, 6))
+        game.addVisual(soldado)
+
+        soldado.recibirAtaque(2)
+        marcador.completarSala()
+
+        assert.equals(puntajeInicial + 300, marcador.puntaje())
+    }
 }

@@ -66,6 +66,7 @@ object g {
         spawner.spawnearEn(fabricanteSoldado, posicion)
     }
 }
+
 object a {
     method construirEn(posicion) {
         game.addVisual(new ParedAgrietada(position = posicion))
@@ -93,7 +94,7 @@ object b {
     }
 }
 
-object a {
+object r {
     method construirEn(posicion) {
         spawner.spawnearEn(fabricanteArquero, posicion)
     }
@@ -129,7 +130,7 @@ const sala2 = [
     [p, o, o, o, o, v, o, o, o, p, p, o, o, o, v, o, o, o, o, p],
     [p, o, o, o, o, p, o, o, o, p, p, o, o, o, p, p, p, p, p, p],
     [p, o, o, o, o, p, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
-    [p, p, v, p, p, p, o, o, o, o, o, o, o, o, o, o, a, o, o, p],
+    [p, p, v, p, p, p, o, o, o, o, o, o, o, o, o, o, r, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, p, p, p, p, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
@@ -194,6 +195,7 @@ object randomizer {
 object spawner {
     const enemigosActivos = #{}
     const proyectilesActivos = #{}
+    const trampasActivas = #{}
 
     method spawnear(fabrica) {
         self.spawnearEn(fabrica, randomizer.emptyPosition())
@@ -212,21 +214,15 @@ object spawner {
         self.spawnearVarios(fabrica, (min .. max).anyOne())
     }
 
-    method registrarEnemigo(enemigo) {
-        enemigosActivos.add(enemigo)
-    }
+    method registrarEnemigo(enemigo) { enemigosActivos.add(enemigo) }
+    method quitarEnemigo(enemigo) { enemigosActivos.remove(enemigo) }
+    method hayEnemigos() = not enemigosActivos.isEmpty()
 
-    method quitarEnemigo(enemigo) {
-        enemigosActivos.remove(enemigo)
-    }
+    method registrarProyectil(proyectil) { proyectilesActivos.add(proyectil) }
+    method quitarProyectil(proyectil) { proyectilesActivos.remove(proyectil) }
 
-    method registrarProyectil(proyectil) {
-        proyectilesActivos.add(proyectil)
-    }
-
-    method quitarProyectil(proyectil) {
-        proyectilesActivos.remove(proyectil)
-    }
+    method registrarTrampa(trampa) { trampasActivas.add(trampa) }
+    method quitarTrampa(trampa) { trampasActivas.remove(trampa) }
 
     method detenerEnemigos() {
         enemigosActivos.forEach({ enemigo => enemigo.detenerMovimiento() })
@@ -240,6 +236,11 @@ object spawner {
         proyectilesActivos.clear()
     }
 
+    method detenerTrampas() {
+        trampasActivas.forEach({ trampa => trampa.detener() })
+        trampasActivas.clear()
+    }
+
     method redibujarPersonajes() {
         self.redibujar(link)
         enemigosActivos.forEach({ enemigo => self.redibujar(enemigo) })
@@ -251,25 +252,17 @@ object spawner {
             game.addVisual(visual)
         }
     }
+}
 
-    const trampasActivas = #{}
-
-    method hayEnemigos() {
-        return !enemigosActivos.isEmpty()
+class FabricanteEnemigo {
+    method crear(position) {
+        const enemigo = self.instanciar(position)
+        spawner.registrarEnemigo(enemigo)
+        return enemigo
     }
 
-    method registrarTrampa(trampa) {
-        trampasActivas.add(trampa)
-    }
-
-    method quitarTrampa(trampa) {
-        trampasActivas.remove(trampa)
-    }
-
-    method detenerTrampas() {
-        trampasActivas.forEach({ trampa => trampa.detener() })
-        trampasActivas.clear()
-    }
+    method instanciar(position)
+    method recompensaAlAzar() = [sinRecompensa, new Corazon(), new RefillFlechas()].anyOne()
 }
 
 object fabricanteVasija {
@@ -282,62 +275,29 @@ object fabricanteVasija {
     }
 }
 
-object fabricanteSoldado {
-    method crear(position) {
-        const soldado = new Soldado(position = position, recompensa = self.recompensaAlAzar())
-        spawner.registrarEnemigo(soldado)
-        return soldado
-    }
-
-    method recompensaAlAzar() {
-        return [sinRecompensa, new Corazon(), new RefillFlechas()].anyOne()
-    }
+object fabricanteSoldado inherits FabricanteEnemigo {
+    override method instanciar(position) = new Soldado(position = position, recompensa = self.recompensaAlAzar())
 }
 
-object fabricanteArquero {
-    method crear(position) {
-        const arquero = new Arquero(position = position, recompensa = self.recompensaAlAzar())
-        spawner.registrarEnemigo(arquero)
-        return arquero
-    }
-
-    method recompensaAlAzar() {
-        return [sinRecompensa, new Corazon(), new RefillFlechas()].anyOne()
-    }
+object fabricanteArquero inherits FabricanteEnemigo {
+    override method instanciar(position) = new Arquero(position = position, recompensa = self.recompensaAlAzar())
 }
 
-object fabricanteCanionero {
-    method crear(position) {
-        const canionero = new Canionero(position = position, recompensa = self.recompensaAlAzar())
-        spawner.registrarEnemigo(canionero)
-        return canionero
-    }
-
-    method recompensaAlAzar() {
-        return [sinRecompensa, new Corazon(), new RefillFlechas()].anyOne()
-    }
+object fabricanteCanionero inherits FabricanteEnemigo {
+    override method instanciar(position) = new Canionero(position = position, recompensa = self.recompensaAlAzar())
 }
 
-object fabricanteMurcielago {
-    method crear(position) {
-        const murcielago = new Murcielago(position = position)
-        spawner.registrarEnemigo(murcielago)
-        return murcielago
-    }
-}
-object fabricanteJefe {
-    method crear(position) {
-        const jefe = new Jefe(position = position)
-        spawner.registrarEnemigo(jefe)
-        return jefe
-    }
+object fabricanteMurcielago inherits FabricanteEnemigo {
+    override method instanciar(position) = new Murcielago(position = position)
 }
 
-object hud {
+object fabricanteJefe inherits FabricanteEnemigo {
+    override method instanciar(position) = new Jefe(position = position)
+}
+
+object hud inherits ElementoEscenario(position = game.at(10, 14)) {
     const jugador = link
     const registro = marcador
-
-    method position() = game.at(10, 14)
 
     method text() {
         return "HP:" + jugador.corazones().toString()
@@ -350,15 +310,10 @@ object hud {
     }
 
     method textoLlave() = if (jugador.tieneLlave()) "sí" else "no"
-
     method textColor() = "FFFFFFFF"
 
-    method esAtravesable() = false
-    method detieneProyectil() = false
-    method recibirAtaque(danio) {}
-    method interactuarCon(personaje) {}
-    method alChocarCon(personaje) {}
-    method recibirExplosion(danio) {}
+    override method esAtravesable() = false
+    override method detieneProyectil() = false
 }
 
 object nivel {

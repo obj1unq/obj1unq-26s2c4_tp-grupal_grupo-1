@@ -2,11 +2,11 @@ import wollok.game.*
 import partida.*
 
 program LinkGame {
-    game.title("La Mazmorra de Link")
+    game.title("The Objects of Zelda: A Reference to the Past")
     game.height(15)
     game.width(20)
     game.ground("piso.png")
-    partida.iniciar()
+    partida.mostrarMenu()
 
     game.start()
 }

@@ -4,23 +4,21 @@ import mapa.*
 import objetos.*
 import sonido.*
 
-class Personaje {
-    var property position = game.at(0, 0)
+class Personaje inherits ElementoEscenario {
     var property estado = normal
     var property direccionActual = abajo
     var property armaEquipada = espada
 
-    method image() {
-        return self.nombreImagen() + "-" + estado.forma() + "-" + direccionActual.texto() + ".png"
-    }
-
+    method image() = self.nombreImagen() + "-" + self.sufijoImagen() + ".png"
     method nombreImagen()
-    method estadoNormal() = armaEquipada.estadoNormal()
-    method estadoPreparando() = armaEquipada.estadoPreparando()
-    method estadoDisparando() = armaEquipada.estadoDisparando()
+    method sufijoImagen() = estado.forma() + self.sufijoOrientacion()
+    method sufijoOrientacion() = "-" + direccionActual.texto()
 
-    method esAtravesable() = false
-    method detieneProyectil() = true
+    method estadoNormal() = armaEquipada.estadoNormal()
+
+    override method esAtravesable() = false
+    override method recibirExplosion(danio) {}
+
     method puedeDispararArco() = true
     method consumirFlecha() {}
     method agregarFlechas(cantidad) {}
@@ -30,10 +28,6 @@ class Personaje {
             armaEquipada.usar(self)
         }
     }
-
-    method interactuarCon(personaje) {}
-    method alChocarCon(personaje) {}
-    method recibirExplosion(danio) {}
 }
 
 object link inherits Personaje(position = game.at(0, 1)) {
@@ -51,7 +45,6 @@ object link inherits Personaje(position = game.at(0, 1)) {
 
     method flechas() = flechas
     method tieneFlechas() = flechas > 0
-
     override method puedeDispararArco() = self.tieneFlechas()
 
     override method consumirFlecha() {
@@ -64,24 +57,18 @@ object link inherits Personaje(position = game.at(0, 1)) {
 
     method bombas() = bombas
     method pociones() = pociones
-
     method nombreItemSeleccionado() = itemSeleccionado.nombre()
+    method tieneLlave() = tieneLlave
+    method corazones() = corazones
+    method invulnerable() = invulnerable
+    method sinCorazones() = corazones == 0
 
-    method agarrarBomba() {
-        bombas += 1
-    }
-
-    method agarrarPocion() {
-        pociones += 1
-    }
-
-    method seleccionarBomba() {
-        itemSeleccionado = itemBomba
-    }
-
-    method seleccionarPocion() {
-        itemSeleccionado = itemPocion
-    }
+    method agarrarBomba() { bombas += 1 }
+    method agarrarPocion() { pociones += 1 }
+    method seleccionarBomba() { itemSeleccionado = itemBomba }
+    method seleccionarPocion() { itemSeleccionado = itemPocion }
+    method agarrarLlave() { tieneLlave = true }
+    method usarLlave() { tieneLlave = false }
 
     method usarItemSeleccionado() {
         if (estado.puedeMover()) {
@@ -114,9 +101,9 @@ object link inherits Personaje(position = game.at(0, 1)) {
         game.schedule(duracion, { self.volverAVulnerable() })
     }
 
-    method tieneLlave() = tieneLlave
-    method corazones() = corazones
-    method invulnerable() = invulnerable
+    method volverAVulnerable() {
+        invulnerable = false
+    }
 
     method equipar(arma) {
         if (estado.puedeMover()) {
@@ -151,19 +138,11 @@ object link inherits Personaje(position = game.at(0, 1)) {
         }
     }
 
-    method agarrarLlave() {
-        tieneLlave = true
-    }
-
-    method usarLlave() {
-        tieneLlave = false
-    }
-
     method curar(cantidad) {
         corazones = (corazones + cantidad).min(5)
     }
 
-    method recibirAtaque(danio) {
+    override method recibirAtaque(danio) {
         if (not invulnerable) {
             self.perderCorazones(danio)
         }
@@ -172,18 +151,11 @@ object link inherits Personaje(position = game.at(0, 1)) {
     method perderCorazones(danio) {
         sonido.danio()
         corazones = (corazones - danio).max(0)
-        invulnerable = true
-        game.schedule(1000, { self.volverAVulnerable() })
+        self.activarInvulnerabilidad(1000)
         if (self.sinCorazones()) {
             juego.perder()
         }
     }
-
-    method volverAVulnerable() {
-        invulnerable = false
-    }
-
-    method sinCorazones() = corazones == 0
 
     method reiniciar() {
         estado = normal
@@ -211,19 +183,32 @@ const arcoNormal = new Estado(forma = "arco-normal", puedeMover = true)
 const arcoTensando = new Estado(forma = "arco-tensando", puedeMover = false)
 const arcoDisparado = new Estado(forma = "arco-disparado", puedeMover = false)
 
-object espada {
-    const property danio = 1
-
-    method nombre() = "Espada"
+class Arma {
+    method nombre()
+    method duracionAtaque()
     method estadoNormal() = normal
     method estadoPreparando() = ataque
     method estadoDisparando() = ataque
+    method estaEnRango(origen, destino)
+    method usar(personaje)
 
-    method estaEnRango(origen, destino) = tablero.estaAlLado(origen, destino)
+    method programarVueltaANormal(personaje) {
+        game.schedule(self.duracionAtaque(), {
+            personaje.estado(personaje.estadoNormal())
+        })
+    }
+}
 
-    method usar(personaje) {
+object espada inherits Arma {
+    const property danio = 1
+
+    override method nombre() = "Espada"
+    override method duracionAtaque() = 500
+    override method estaEnRango(origen, destino) = tablero.estaAlLado(origen, destino)
+
+    override method usar(personaje) {
         sonido.espada()
-        personaje.estado(personaje.estadoDisparando())
+        personaje.estado(self.estadoDisparando())
         const posObjetivo = personaje.direccionActual().posicionAlLado(personaje.position())
 
         if (tablero.dentro(posObjetivo)) {
@@ -236,37 +221,32 @@ object espada {
             golpe.activar()
         }
 
-        game.schedule(500, { personaje.estado(personaje.estadoNormal()) })
+        self.programarVueltaANormal(personaje)
     }
 }
 
-class ArmaADistancia {
-    method nombre()
+class ArmaADistancia inherits Arma {
     method alcance()
-    method duracionAtaque()
-    method estadoNormal() = normal
-    method estadoPreparando() = ataque
-    method estadoDisparando() = ataque
     method crearProyectil(posicion, direccion)
 
-    method estaEnRango(origen, destino) {
+    override method estaEnRango(origen, destino) {
         return tablero.estanAlineados(origen, destino)
             and tablero.distancia(origen, destino) <= self.alcance() * self.alcance()
             and tablero.caminoDespejado(origen, destino)
     }
 
-    method usar(personaje) {
-        personaje.estado(personaje.estadoPreparando())
+    override method usar(personaje) {
+        personaje.estado(self.estadoPreparando())
         self.ejecutarDisparo(personaje)
     }
 
     method ejecutarDisparo(personaje) {
         self.disparar(personaje)
-        game.schedule(self.duracionAtaque(), { personaje.estado(personaje.estadoNormal()) })
+        self.programarVueltaANormal(personaje)
     }
 
     method disparar(personaje) {
-        personaje.estado(personaje.estadoDisparando())
+        personaje.estado(self.estadoDisparando())
         const dir = personaje.direccionActual()
         const posInicial = dir.posicionAlLado(personaje.position())
         if (tablero.dentro(posInicial)) {
@@ -293,8 +273,7 @@ object arco inherits ArmaADistancia {
         if (self.puedeUsar(personaje)) {
             personaje.consumirFlecha()
             self.iniciarCooldown()
-            personaje.estado(personaje.estadoPreparando())
-            self.ejecutarDisparo(personaje)
+            super(personaje)
         }
     }
 
@@ -307,7 +286,7 @@ object arco inherits ArmaADistancia {
         game.schedule(150, {
             if (game.hasVisual(personaje)) {
                 self.disparar(personaje)
-                game.schedule(self.duracionAtaque(), { personaje.estado(personaje.estadoNormal()) })
+                self.programarVueltaANormal(personaje)
             }
         })
     }
@@ -324,36 +303,19 @@ object canion inherits ArmaADistancia {
     override method crearProyectil(posicion, direccion) = new BalaDeCanion(position = posicion, direccion = direccion)
 }
 
-class GolpeDeEspada {
-    var property position
+class GolpeDeEspada inherits ElementoEscenario {
     const direccion
     const danioGolpe
 
     method image() = "estocada-" + direccion.texto() + ".png"
 
     method activar() {
-        game.getObjectsIn(position).forEach({ objeto =>
-            if (objeto != self) {
-                objeto.recibirAtaque(danioGolpe)
-            }
-        })
-        game.schedule(80, {
-            if (game.hasVisual(self)) {
-                game.removeVisual(self)
-            }
-        })
+        self.otrosObjetosEn(position).forEach({ objeto => objeto.recibirAtaque(danioGolpe) })
+        game.schedule(80, { self.quitarDelTablero() })
     }
-
-    method recibirExplosion(danio) {}
-    method esAtravesable() = true
-    method detieneProyectil() = false
-    method recibirAtaque(danio) {}
-    method interactuarCon(personaje) {}
-    method alChocarCon(personaje) {}
 }
 
-class Proyectil {
-    var property position
+class Proyectil inherits ElementoEscenario {
     const direccion
     var activo = true
     var enMovimiento = false
@@ -361,13 +323,6 @@ class Proyectil {
     method image()
     method danio()
     method intervalo()
-    method efectoAlImpactar()
-
-    method esAtravesable() = true
-    method detieneProyectil() = false
-    method recibirAtaque(danio) {}
-    method interactuarCon(personaje) {}
-    method recibirExplosion(danio) {}
 
     method nombreDelMovimiento() = "proyectil-" + self.identity().toString()
 
@@ -413,20 +368,12 @@ class Proyectil {
 
     method impactar() {
         if (activo) {
-            self.danarObjetosEn(position)
+            self.otrosObjetosEn(position).forEach({ objeto => objeto.recibirAtaque(self.danio()) })
             self.finalizarImpacto()
         }
     }
 
-    method danarObjetosEn(pos) {
-        game.getObjectsIn(pos).forEach({ objeto =>
-            if (objeto != self) {
-                objeto.recibirAtaque(self.danio())
-            }
-        })
-    }
-
-    method alChocarCon(personaje) {
+    override method alChocarCon(personaje) {
         if (activo) {
             personaje.recibirAtaque(self.danio())
             self.finalizarImpacto()
@@ -440,10 +387,8 @@ class Proyectil {
         self.efectoAlImpactar()
     }
 
-    method desaparecer() {
-        if (game.hasVisual(self)) {
-            game.removeVisual(self)
-        }
+    method efectoAlImpactar() {
+        self.quitarDelTablero()
     }
 }
 
@@ -451,10 +396,6 @@ class Flecha inherits Proyectil {
     override method image() = "flecha-" + direccion.texto() + ".png"
     override method danio() = 1
     override method intervalo() = 120
-
-    override method efectoAlImpactar() {
-        self.desaparecer()
-    }
 }
 
 class BalaDeCanion inherits Proyectil {
@@ -474,7 +415,7 @@ class BalaDeCanion inherits Proyectil {
     method mostrarHumo() {
         if (game.hasVisual(self)) {
             imagenActual = "bala-humo.png"
-            game.schedule(180, { self.desaparecer() })
+            game.schedule(180, { self.quitarDelTablero() })
         }
     }
 }

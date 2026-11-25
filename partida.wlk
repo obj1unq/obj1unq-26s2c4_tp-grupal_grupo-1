@@ -1,4 +1,5 @@
 import mapa.*
+import link.*
 import sonido.*
 
 object marcador {
@@ -13,7 +14,17 @@ object marcador {
         salasCompletadas += 1
     }
 
+    method reiniciar() {
+        enemigosVencidos.clear()
+        salasCompletadas = 0
+    }
+
     method puntaje() = enemigosVencidos.sum({ enemigo => enemigo.puntos() }) + salasCompletadas * 200
+}
+
+object pantallaInicio {
+    method position() = game.at(0, 0)
+    method image() = "portada.png"
 }
 
 object partida {
@@ -21,7 +32,16 @@ object partida {
     const salas = [sala1, sala2, sala3, sala4]
     var indiceSalaActual = 0
 
+    method mostrarMenu() {
+        spawner.detenerEnemigos()
+        game.clear()
+        game.addVisual(pantallaInicio)
+        keyboard.enter().onPressDo({ self.iniciar() })
+    }
+
     method iniciar() {
+        registro.reiniciar()
+        link.reiniciar()
         indiceSalaActual = 0
         sonido.iniciarMusica()
         nivel.cargarSala(salas.get(indiceSalaActual))

@@ -1,10 +1,10 @@
 object sonido {
 
-var musicaFondo = null
+    var musicaFondo = null
 
     method iniciarMusica() {
         self.detenerMusica()
-        musicaFondo = game.sound("loop.mp3") 
+        musicaFondo = game.sound("loop.mp3")
         musicaFondo.shouldLoop(true)
         musicaFondo.volume(0.3)
         musicaFondo.play()
