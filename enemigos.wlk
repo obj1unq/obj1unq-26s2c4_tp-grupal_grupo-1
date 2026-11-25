@@ -9,6 +9,7 @@ class Enemigo inherits Personaje {
     const registro = marcador
     var danioRecibido = 0
     var property recompensa = sinRecompensa
+    var activo = false
 
     method initialize() {
         self.iniciarMovimiento()
@@ -33,6 +34,7 @@ class Enemigo inherits Personaje {
     }
 
     method recibirAtaque(danio) {
+        activo = true
         danioRecibido += danio
         if (self.estaVencido()) {
             self.morir()
@@ -51,8 +53,17 @@ class Enemigo inherits Personaje {
         recompensa.soltarEn(position)
     }
 
+    method rangoActivacion() = 3
+
+    method objetivoEnRangoDeActivacion() {
+        return tablero.distancia(position, objetivo.position()) <= self.rangoActivacion() * self.rangoActivacion()
+    }
+
     method moverse() {
-        if (estado.puedeMover()) {
+        if (not activo and self.objetivoEnRangoDeActivacion()) {
+            activo = true
+        }
+        if (activo and estado.puedeMover()) {
             if (self.puedeAtacar()) {
                 direccionActual = tablero.direccionHacia(position, objetivo.position())
                 self.atacar()
@@ -75,10 +86,19 @@ class Enemigo inherits Personaje {
         }
     }
 
+    method direccionElegida() {
+        return self.direccionHaciaObjetivo()
+    }
+
+    method direccionHaciaObjetivo() {
+        return tablero.direccionesLibres(position).min({ dir =>
+            tablero.distancia(dir.posicionAlLado(position), objetivo.position())
+        })
+    }
+
     method vida()
     method puntos()
     method intervalo()
-    method direccionElegida()
 }
 
 class Soldado inherits Enemigo {
@@ -86,12 +106,42 @@ class Soldado inherits Enemigo {
     override method vida() = 2
     override method puntos() = 100
     override method intervalo() = 800
+}
+
+class EnemigoADistancia inherits Enemigo {
+    override method rangoActivacion() = 6
 
     override method direccionElegida() {
-        return tablero.direccionesLibres(position).min({ dir =>
-            tablero.distancia(dir.posicionAlLado(position), objetivo.position())
-        })
+        return tablero.direccionesLibres(position).findOrElse(
+            { dir => armaEquipada.estaEnRango(dir.posicionAlLado(position), objetivo.position()) },
+            { self.direccionHaciaObjetivo() }
+        )
     }
+}
+
+class Arquero inherits EnemigoADistancia {
+    override method initialize() {
+        armaEquipada = arco
+        estado = self.estadoNormal()
+        super()
+    }
+
+    override method nombreImagen() = "arquero"
+    override method vida() = 2
+    override method puntos() = 120
+    override method intervalo() = 700
+}
+
+class Canionero inherits EnemigoADistancia {
+    override method initialize() {
+        armaEquipada = canion
+        super()
+    }
+
+    override method nombreImagen() = "canionero"
+    override method vida() = 3
+    override method puntos() = 150
+    override method intervalo() = 1000
 }
 
 class Murcielago inherits Enemigo {
@@ -105,6 +155,7 @@ class Murcielago inherits Enemigo {
     override method puntos() = 50
     override method intervalo() = 400
     override method esAtravesable() = modo.esAtravesable()
+    override method detieneProyectil() = modo.puedeRecibirDanio()
 
     method frameActual() = frameActual
 
@@ -121,7 +172,6 @@ class Murcielago inherits Enemigo {
             super(danio)
         }
     }
-
 
     override method direccionElegida() {
         return self.direccionesDeVuelo().min({ dir =>

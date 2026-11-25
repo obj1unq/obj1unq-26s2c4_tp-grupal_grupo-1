@@ -67,6 +67,18 @@ object g {
     }
 }
 
+object a {
+    method construirEn(posicion) {
+        spawner.spawnearEn(fabricanteArquero, posicion)
+    }
+}
+
+object k {
+    method construirEn(posicion) {
+        spawner.spawnearEn(fabricanteCanionero, posicion)
+    }
+}
+
 const sala1 = [
     [p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p],
     [p, l, o, p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
@@ -91,7 +103,7 @@ const sala2 = [
     [p, o, o, o, o, v, o, o, o, p, p, o, o, o, v, o, o, o, o, p],
     [p, o, o, o, o, p, o, o, o, p, p, o, o, o, p, p, p, p, p, p],
     [p, o, o, o, o, p, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
-    [p, p, v, p, p, p, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, p, v, p, p, p, o, o, o, o, o, o, o, o, o, o, a, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, p, p, p, p, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
@@ -107,7 +119,7 @@ const sala3 = [
     [p, v, v, o, o, o, o, o, o, p, p, o, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, p, p, o, o, o, o, o, o, p, p, o, o, o, o, p],
     [p, o, o, o, o, p, p, o, o, o, o, o, o, p, p, o, o, o, o, p],
-    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
+    [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, k, o, o, p],
     [p, o, o, o, o, o, o, o, p, p, p, p, o, o, o, o, o, o, o, s],
     [p, o, o, o, o, o, o, o, p, p, p, p, o, o, o, o, o, o, o, p],
     [p, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, p],
@@ -138,6 +150,7 @@ object randomizer {
 
 object spawner {
     const enemigosActivos = #{}
+    const proyectilesActivos = #{}
 
     method spawnear(fabrica) {
         self.spawnearEn(fabrica, randomizer.emptyPosition())
@@ -164,9 +177,23 @@ object spawner {
         enemigosActivos.remove(enemigo)
     }
 
+    method registrarProyectil(proyectil) {
+        proyectilesActivos.add(proyectil)
+    }
+
+    method quitarProyectil(proyectil) {
+        proyectilesActivos.remove(proyectil)
+    }
+
     method detenerEnemigos() {
         enemigosActivos.forEach({ enemigo => enemigo.detenerMovimiento() })
         enemigosActivos.clear()
+        self.detenerProyectiles()
+    }
+
+    method detenerProyectiles() {
+        proyectilesActivos.forEach({ proyectil => proyectil.detener() })
+        proyectilesActivos.clear()
     }
 
     method redibujarPersonajes() {
@@ -204,6 +231,30 @@ object fabricanteSoldado {
     }
 }
 
+object fabricanteArquero {
+    method crear(position) {
+        const arquero = new Arquero(position = position, recompensa = self.recompensaAlAzar())
+        spawner.registrarEnemigo(arquero)
+        return arquero
+    }
+
+    method recompensaAlAzar() {
+        return [sinRecompensa, new Corazon()].anyOne()
+    }
+}
+
+object fabricanteCanionero {
+    method crear(position) {
+        const canionero = new Canionero(position = position, recompensa = self.recompensaAlAzar())
+        spawner.registrarEnemigo(canionero)
+        return canionero
+    }
+
+    method recompensaAlAzar() {
+        return [sinRecompensa, new Corazon()].anyOne()
+    }
+}
+
 object fabricanteMurcielago {
     method crear(position) {
         const murcielago = new Murcielago(position = position)
@@ -218,13 +269,17 @@ object hud {
 
     method position() = game.at(10, 14)
 
-    method text() = "Corazones: " + jugador.corazones().toString() + "   Llave: " + self.textoLlave() + "   Puntaje: " + registro.puntaje().toString()
+    method text() = "Corazones: " + jugador.corazones().toString()
+        + "   Arma: " + jugador.armaEquipada().nombre()
+        + "   Llave: " + self.textoLlave()
+        + "   Puntaje: " + registro.puntaje().toString()
 
     method textoLlave() = if (jugador.tieneLlave()) "sí" else "no"
 
     method textColor() = "FFFFFFFF"
 
     method esAtravesable() = false
+    method detieneProyectil() = false
     method recibirAtaque(danio) {}
     method interactuarCon(personaje) {}
     method alChocarCon(personaje) {}
@@ -241,6 +296,8 @@ object nivel {
         keyboard.z().onPressDo({ jugador.usarArma() })
         keyboard.space().onPressDo({ jugador.usarArma() })
         keyboard.e().onPressDo({ jugador.interactuar() })
+        keyboard.num1().onPressDo({ jugador.equipar(espada) })
+        keyboard.num2().onPressDo({ jugador.equipar(arco) })
     }
 
     method cargarSala(filas) {
@@ -268,6 +325,7 @@ object nivel {
     method poblarAlAzar() {
         spawner.spawnearEnRango(fabricanteVasija, 3, 6)
         spawner.spawnearEnRango(fabricanteMurcielago, 1, 2)
-        spawner.spawnearEnRango(fabricanteSoldado, 1, 2)
+        spawner.spawnear(fabricanteSoldado)
+        spawner.spawnear([fabricanteArquero, fabricanteCanionero].anyOne())
     }
 }
