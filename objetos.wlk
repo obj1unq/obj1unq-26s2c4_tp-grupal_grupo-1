@@ -21,6 +21,9 @@ class ElementoEscenario {
         game.addVisual(self)
         spawner.redibujarPersonajes()
     }
+    method recibirExplosion(danio) {
+        self.recibirAtaque(danio)
+    }
 }
 
 class Llave inherits ElementoEscenario {
@@ -147,6 +150,80 @@ object puertaAbierta {
 
     method alChocar(puerta, personaje) {
         puerta.cruzar()
+    }
+}
+
+class Bomba inherits ElementoEscenario {
+    method image() {
+        return "place_holder_negro.png"
+    }
+
+    override method alChocarCon(personaje) {
+        personaje.agarrarBomba()
+        if (game.hasVisual(self)) {
+            game.removeVisual(self)
+        }
+    }
+}
+
+class Pocion inherits ElementoEscenario {
+    method image() {
+        return "place_holder_verde.png"
+    }
+
+    override method alChocarCon(personaje) {
+        personaje.agarrarPocion()
+        if (game.hasVisual(self)) {
+            game.removeVisual(self)
+        }
+    }
+}
+
+class BombaActiva inherits ElementoEscenario {
+    method image() {
+        return "place_holder_negro.png"
+    }
+
+    method activar() {
+        game.schedule(1500, { self.explotar() })
+    }
+
+    method explotar() {
+        if (game.hasVisual(self)) {
+            game.removeVisual(self)
+        }
+        self.posicionesAfectadas().forEach({ pos => self.detonarEn(pos) })
+    }
+
+    method posicionesAfectadas() {
+        const vecinas = tablero.direcciones().map({ dir => dir.posicionAlLado(position) })
+        const todas = [position] + vecinas
+        return todas.filter({ pos => tablero.dentro(pos) })
+    }
+
+    method detonarEn(pos) {
+        const explosion = new Explosion(position = pos)
+        game.addVisual(explosion)
+        explosion.activar()
+    }
+}
+
+class Explosion inherits ElementoEscenario {
+    method image() {
+        return "place_holder_amarillo.png"
+    }
+
+    method activar() {
+        game.getObjectsIn(position).forEach({ objeto =>
+            if (objeto != self) {
+                objeto.recibirExplosion(3)
+            }
+        })
+        game.schedule(300, {
+            if (game.hasVisual(self)) {
+                game.removeVisual(self)
+            }
+        })
     }
 }
 

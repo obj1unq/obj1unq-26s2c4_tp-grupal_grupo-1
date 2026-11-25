@@ -215,7 +215,7 @@ object fabricanteVasija {
     }
 
     method recompensaAlAzar() {
-        return [sinRecompensa, sinRecompensa, new Corazon()].anyOne()
+        return [sinRecompensa, sinRecompensa, new Corazon(), new Bomba(), new Pocion()].anyOne()
     }
 }
 
@@ -269,10 +269,9 @@ object hud {
 
     method position() = game.at(10, 14)
 
-    method text() = "Corazones: " + jugador.corazones().toString()
-        + "   Arma: " + jugador.armaEquipada().nombre()
-        + "   Llave: " + self.textoLlave()
-        + "   Puntaje: " + registro.puntaje().toString()
+    method text() {
+        return "HP:" + jugador.corazones().toString() + " Llave:" + self.textoLlave() + " B:" + jugador.bombas().toString() + " P:" + jugador.pociones().toString() + " [" + jugador.nombreItemSeleccionado() + "] Pts:" + registro.puntaje().toString()
+    }
 
     method textoLlave() = if (jugador.tieneLlave()) "sí" else "no"
 
@@ -283,6 +282,7 @@ object hud {
     method recibirAtaque(danio) {}
     method interactuarCon(personaje) {}
     method alChocarCon(personaje) {}
+    method recibirExplosion(danio) {}
 }
 
 object nivel {
@@ -298,6 +298,9 @@ object nivel {
         keyboard.e().onPressDo({ jugador.interactuar() })
         keyboard.num1().onPressDo({ jugador.equipar(espada) })
         keyboard.num2().onPressDo({ jugador.equipar(arco) })
+        keyboard.num3().onPressDo({ jugador.seleccionarBomba() })
+        keyboard.num4().onPressDo({ jugador.seleccionarPocion() })
+        keyboard.b().onPressDo({ jugador.usarItemSeleccionado() })
     }
 
     method cargarSala(filas) {
