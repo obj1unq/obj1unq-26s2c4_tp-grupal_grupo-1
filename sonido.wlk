@@ -71,6 +71,10 @@ object sonido {
         self.reproducir("victoria.wav")
     }
 
+    method flecha() {
+        self.reproducir("flecha.wav")
+    }
+
     method gameOver() {
         self.reproducir("gameover.wav")
     }

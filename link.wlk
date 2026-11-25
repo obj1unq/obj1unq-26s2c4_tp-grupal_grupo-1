@@ -396,6 +396,15 @@ class Flecha inherits Proyectil {
     override method image() = "flecha-" + direccion.texto() + ".png"
     override method danio() = 1
     override method intervalo() = 120
+
+    override method lanzar() {
+        sonido.flecha()
+        super()
+    }
+
+    override method efectoAlImpactar() {
+        self.desaparecer()
+    }
 }
 
 class BalaDeCanion inherits Proyectil {

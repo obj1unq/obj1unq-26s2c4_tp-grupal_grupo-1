@@ -7,6 +7,5 @@ program LinkGame {
     game.width(20)
     game.ground("piso.png")
     partida.mostrarMenu()
-
     game.start()
 }
