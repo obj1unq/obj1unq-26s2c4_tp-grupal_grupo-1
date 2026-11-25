@@ -125,6 +125,19 @@ describe "tests de la logica de ataque y arma" {
 
         assert.equals(posicion, link.position())
     }
+
+    test "link equipa el arco y cambia su imagen al disparar" {
+        link.position(game.at(5, 5))
+        link.direccionActual(derecha)
+        link.equipar(arco)
+
+        assert.equals("link-arco-normal-derecha.png", link.image())
+
+        link.usarArma()
+
+        assert.equals("link-arco-tensando-derecha.png", link.image())
+        assert.equals(arcoTensando, link.estado())
+    }
 }
 
 describe "tests de interactividad de objetos y enemigos" {
@@ -158,7 +171,7 @@ describe "tests de interactividad de objetos y enemigos" {
         assert.notEquals(game.at(5, 3), soldado.position())
     }
 
-    test "el murcielago espera en standby, se activa al acercarse Link y cambia a derrotado al morir" {
+    test "el murcielago se activa al acercarse Link y muere" {
         link.position(game.at(1, 1))
         const murcielago = new Murcielago(position = game.at(15, 10))
         game.addVisual(murcielago)
@@ -176,7 +189,7 @@ describe "tests de interactividad de objetos y enemigos" {
         assert.that(murcielago.esAtravesable())
     }
 
-    test "link abre una puerta con candado al interactuar mirando hacia ella" {
+    test "link abre puerta con candado" {
         link.position(game.at(18, 11))
         link.direccionActual(derecha)
         link.agarrarLlave()
@@ -191,7 +204,7 @@ describe "tests de interactividad de objetos y enemigos" {
         assert.equals(game.at(18, 11), link.position())
     }
 
-    test "link abre un cofre al interactuar con el" {
+    test "link abre un cofre" {
         link.position(game.at(5, 5))
         link.direccionActual(arriba)
         const cofre = new Cofre(position = game.at(5, 6), recompensa = new Llave())
@@ -202,5 +215,33 @@ describe "tests de interactividad de objetos y enemigos" {
         assert.that(cofre.abierto())
         assert.equals("cofre-abierto.png", cofre.image())
         assert.that(cofre.esAtravesable())
+    }
+
+    test "el arquero dispara si esta alineado sin paredes" {
+        link.position(game.at(10, 5))
+        const arquero = new Arquero(position = game.at(5, 5))
+        game.addVisual(arquero)
+
+        assert.that(arquero.puedeAtacar())
+
+        game.addVisual(new Pared(position = game.at(7, 5)))
+        assert.notThat(arquero.puedeAtacar())
+    }
+
+    test "la bala de canion hace 2 de danio y explota" {
+        link.position(game.at(6, 5))
+        game.addVisual(link)
+        const bala = new BalaDeCanion(position = game.at(6, 5), direccion = derecha)
+
+        bala.lanzar()
+
+        assert.equals(1, link.corazones())
+        assert.equals("bala-explosion.png", bala.image())
+    }
+
+    test "el canionero inicia con canion y 3 de vida" {
+        const canionero = new Canionero(position = game.at(8, 8))
+        assert.equals(canion, canionero.armaEquipada())
+        assert.equals(3, canionero.vida())
     }
 }

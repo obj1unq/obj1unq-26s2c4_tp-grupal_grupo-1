@@ -34,8 +34,9 @@ _(video corto del juego nuestro cuando esté andando)_
 
 **Enemigos**
 - **Soldado:** te persigue. Cae con 2 golpes de espada.
-- **Murciélago:** se mueve al azar y rápido. 1 golpe.
-- **Estatua:** no se mueve, dispara en línea recta cada tanto. No se puede destruir; hay que esquivarla.
+- **Arquero:** te dispara de lejos. Cae con 2 golpes de espada.
+- **Cañonero:** te dispara de lejos. Cae con 2 golpes de espada.
+- **Murciélago:** te espera. Te acercas y te ataca rápido. 1 golpe.
 - **Jefe:** 6 golpes, te persigue y cada 3 turnos hace un ataque que ocupa las celdas vecinas.
 
 **Ítems** (se agarran pasando por encima o abriendo cofres)

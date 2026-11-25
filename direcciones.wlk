@@ -1,4 +1,3 @@
-
 object tablero {
     const property direcciones = [arriba, abajo, izquierda, derecha]
 
@@ -31,10 +30,6 @@ object tablero {
         return self.dentro(position) and self.esAtravesable(position)
     }
 
-    method estaLibre(position) {
-        return self.puedeIr(position)
-    }
-
     method direccionesLibres(position) {
         return direcciones.filter({ dir => dir.puedeAvanzar(position) })
     }
@@ -47,12 +42,17 @@ object tablero {
         return direcciones.any({ dir => dir.posicionAlLado(origen) == destino })
     }
 
-    method direccionHaciaVecino(origen, destino) {
-        return direcciones.find({ dir => dir.posicionAlLado(origen) == destino })
-    }
-
     method estanAlineados(origen, destino) {
         return origen != destino and (origen.x() == destino.x() or origen.y() == destino.y())
+    }
+
+    method caminoDespejado(origen, destino) {
+        const dir = self.direccionHacia(origen, destino)
+        return self.pasosDespejadosDesde(dir.posicionAlLado(origen), destino, dir)
+    }
+
+    method pasosDespejadosDesde(actual, destino, dir) {
+        return actual == destino or (self.puedeIr(actual) and self.pasosDespejadosDesde(dir.posicionAlLado(actual), destino, dir))
     }
 
     method direccionHacia(origen, destino) {
@@ -118,4 +118,3 @@ object izquierda inherits Direccion {
     override method texto() = "izquierda"
     override method posicionAlLado(position) = position.left(1)
 }
-
